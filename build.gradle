@@ -5,9 +5,9 @@ plugins {
     id 'idea'
 }
 
-group 'ru.vachok.fl.pbemchess'
+group 'ru.vachok.pbem.chess'
 version '0.1'
-mainClassName = group + '.StartMe'
+mainClassName = group + '.StartMePChess'
 sourceCompatibility = 1.10
 sourceSets {
     main {

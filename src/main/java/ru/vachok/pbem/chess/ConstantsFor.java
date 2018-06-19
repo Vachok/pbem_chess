@@ -9,7 +9,6 @@ import java.util.logging.Logger;
  @since 19.06.2018 (21:34) */
 public enum ConstantsFor {
     ;
-    
     /**
      Simple Name класса, для поиска настроек
      */
@@ -29,7 +28,7 @@ public enum ConstantsFor {
         try{
             return new String(s.getBytes(), "UTF-8");
         } catch(UnsupportedEncodingException e){
-            LOGGER.throwing(SOURCE_CLASS, "java.io.UnsupportedEncodingException is", e);
+            LOGGER.throwing(SOURCE_CLASS, "toUTF ", e);
         }
         return "Can't convert to UTF-8!";
     }
@@ -43,7 +42,7 @@ public enum ConstantsFor {
         try{
             return new String(s.getBytes(), "Windows-1251");
         } catch(UnsupportedEncodingException e){
-            LOGGER.throwing(SOURCE_CLASS, "java.io.UnsupportedEncodingException is", e);
+            LOGGER.throwing(SOURCE_CLASS, "toW1251", e);
         }
         return "Can't convert to Windows-1251!";
     }
@@ -57,7 +56,7 @@ public enum ConstantsFor {
         try{
             return new String(s.getBytes(), "UNICODE");
         } catch(UnsupportedEncodingException e){
-            LOGGER.throwing(SOURCE_CLASS, "java.io.UnsupportedEncodingException is", e);
+            LOGGER.throwing(SOURCE_CLASS, "toUnicode", e);
         }
         return "Can't convert to UNICODE!";
     }

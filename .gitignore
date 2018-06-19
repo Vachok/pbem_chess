@@ -19,3 +19,5 @@ gradlew.bat
 /chat.iws
 /chat.ipr
 /build/
+/src/main/java/ru/vachok/pbem/chess/META-INF/
+/src/main/docs/
