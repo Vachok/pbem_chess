@@ -1,0 +1,21 @@
+# Created by .ignore support plugin (hsz.mobi)
+### NotepadPP template
+# Notepad++ backups #
+*.bak
+### Example user template template
+### Example user template
+
+# IntelliJ project files
+*.iml
+out
+gen
+##
+.idea/
+.gradle/
+gradle/
+gradlew
+gradlew.bat
+/src/test/
+/chat.iws
+/chat.ipr
+/build/

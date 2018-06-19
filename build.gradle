@@ -1,0 +1,69 @@
+plugins {
+    id 'com.gradle.build-scan' version '1.13.4'
+    id 'java'
+    id 'application'
+    id 'idea'
+}
+
+group 'ru.vachok.fl.pbemchess'
+version '0.1'
+mainClassName = group + '.StartMe'
+sourceCompatibility = 1.10
+sourceSets {
+    main {
+        resources {
+            srcDirs = ["src/main/java", "src/main/resources"]
+            includes = ["**/*.fxml", "**/*.css", "**/*.properties", "**/*.png", "**/*.html",
+                        "**/*", ".sql", "**/*.jar", "**/*regpass"]
+        }
+    }
+    test {
+        resources {
+            srcDirs = ["src/test/java", "src/test/resources"]
+            includes = ["**/*.fxml", "**/*.css", "**/*.properties", "**/*.png", "**/*.jar",
+                        "**/*regpass"]
+        }
+    }
+}
+repositories {
+    mavenCentral()
+    jcenter()
+}
+dependencies {
+    compile fileTree('lib\\')
+    // https://mvnrepository.com/artifact/org.testng/testng
+    testCompile group: 'org.testng', name: 'testng', version: '6.14.3'
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-email
+    compile group: 'org.apache.commons', name: 'commons-email', version: '1.5'
+// https://mvnrepository.com/artifact/mysql/mysql-connector-java
+    compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.11'
+
+}
+buildScan {
+    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
+    termsOfServiceAgree = 'yes'
+}
+jar {
+    baseName = project.name
+    version = project.version
+    manifest {
+        attributes(
+                'Main-Class': mainClassName,
+                'JavaFX-Version': 9,
+                'Class-Path': configurations.runtime.collect() { 'lib/' + it.name }.join('')
+        )
+    }
+    from configurations.compile.collect() { it.isDirectory() ? it : zipTree(it) }
+}
+test {
+    useTestNG()
+    setMaxParallelForks(6)
+    testLogging.showStandardStreams = true
+    beforeTest { descriptor ->
+        logger.lifecycle("Running test: " + descriptor)
+    }
+    failFast = false
+    onOutput { descriptor, event ->
+        logger.lifecycle("Test: " + descriptor + " produced standard out/err: " + event.message)
+    }
+}
