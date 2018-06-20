@@ -21,3 +21,11 @@ gradlew.bat
 /build/
 /src/main/java/ru/vachok/pbem/chess/META-INF/
 /src/main/docs/
+/hs_err_pid8644.log
+/hs_err_pid8284.log
+/replay_pid8644.log
+/hs_err_pid5068.log
+/replay_pid5068.log
+/hs_err_pid10480.log
+/chess.iws
+/chess.ipr

@@ -1,5 +1,6 @@
 /**
- <a href="http://chess.vachok.ru/" target=_blank>chat - ru.vachok.pbem.chess</a>
- @version 0.1
+ <a href="http://chess.vachok.ru/" target=_blank>Точка входа тут {@link ru.vachok.pbem.chess.StartMePChess}</a>
+ @see ru.vachok.pbem.chess.StartMePChess
+ @version 0.16
  @since 19.06.2018 06 2018 (21:30) */
 package ru.vachok.pbem.chess;

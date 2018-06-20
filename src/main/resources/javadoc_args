@@ -1,0 +1,12 @@
+-classpath
+"G:/My_Proj/fl/pbem_chess/src/main/java;G:/My_Proj/fl/pbem_chess/src/main/resources;G:/My_Proj/fl/pbem_chess/lib/messenger-0.35.jar;G:/My_Proj/fl/pbem_chess/lib/mysqlandprop-0.31.jar;C:/Users/14350/.gradle/caches/modules-2/files-2.1/commons-io/commons-io/2.6/815893df5f31da2ece4040fe0a12fd44b577afaf/commons-io-2.6.jar;C:/Users/14350/.gradle/caches/modules-2/files-2.1/org.apache.commons/commons-email/1.5/e8e677c6362eba14ff3c476ba63ccb83132dbd52/commons-email-1.5.jar;C:/Users/14350/.gradle/caches/modules-2/files-2.1/com.sun.mail/javax.mail/1.5.6/ab5daef2f881c42c8e280cbe918ec4d7fdfd7efe/javax.mail-1.5.6.jar;C:/Users/14350/.gradle/caches/modules-2/files-2.1/javax.activation/activation/1.1/e6cb541461c2834bdea3eb920f1884d1eb508b50/activation-1.1.jar"
+"G:/My_Proj/fl/pbem_chess/src/main/java/ru/vachok/pbem/chess/emails/EMailsChess.java"
+"G:/My_Proj/fl/pbem_chess/src/main/java/ru/vachok/pbem/chess/package-info.java"
+"G:/My_Proj/fl/pbem_chess/src/main/java/ru/vachok/pbem/chess/emails/DSRes.java"
+"G:/My_Proj/fl/pbem_chess/src/main/java/ru/vachok/pbem/chess/StartMePChess.java"
+"G:/My_Proj/fl/pbem_chess/src/main/java/ru/vachok/pbem/chess/utilitar/inetsens/package-info.java"
+"G:/My_Proj/fl/pbem_chess/src/main/java/ru/vachok/pbem/chess/utilitar/Utilit.java"
+"G:/My_Proj/fl/pbem_chess/src/main/java/ru/vachok/pbem/chess/emails/package-info.java"
+"G:/My_Proj/fl/pbem_chess/src/main/java/ru/vachok/pbem/chess/emails/EChecker.java"
+"G:/My_Proj/fl/pbem_chess/src/main/java/ru/vachok/pbem/chess/utilitar/ConstantsFor.java"
+"G:/My_Proj/fl/pbem_chess/src/main/java/ru/vachok/pbem/chess/utilitar/package-info.java"
