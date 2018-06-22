@@ -30,6 +30,11 @@ public enum ConstantsFor {
     */
    public static final int BAD = 666;
 
+   /**
+    * 1000000 миллисек timeout.
+    */
+   public static final long TIMEOUT_100000 = 1000000;
+
    private static InetAddress vachokRu;
 
    /**
@@ -70,5 +75,9 @@ public enum ConstantsFor {
             ", TIMEOUT_1000=" + TIMEOUT_1000 +
             ", vachokRu=" + vachokRu +
             '}';
+   }
+
+   public static String help() {
+      return Utilit.toUTF("а тут могла выть ваша...");
    }
 }

@@ -115,9 +115,9 @@ public class EChecker implements Callable, EMailsChess {
 
             byte[] bytes = inputStreamM.readAllBytes();
             String msg = LocalDateTime.now() + "\n" + mailSMessage.getSentDate().toString() + "\nFrom STREAM-bytes is: " + bytes.length + "\n" + new String(bytes);
-            String key = mailSMessage.getMessageNumber() + "_" + System.currentTimeMillis() + "";
+            String key = "Message number " + mailSMessage.getMessageNumber() + "_" + System.currentTimeMillis() + ".\n\n" + "SUBJECT : " + mailSMessage.getSubject() + ";";
             mailsCollection.put(key, msg);
-            FileUtils.writeStringToFile(file, key + " is key.\n\nMESSAGE: " + msg, "UTF-8");
+            FileUtils.writeStringToFile(file, key + "\n MESSAGE: " + msg, "UTF-8");
          }
       }
       catch(IOException | NoSuchElementException | MessagingException e){
@@ -125,7 +125,7 @@ public class EChecker implements Callable, EMailsChess {
          messageToUser.errorAlert("EChecker", e.getMessage(), Arrays.toString(e.getStackTrace()));
       }
       mailsCollection.put(Utilit.toW1251("Третья..."), "ENC 1251");
-      mailsCollection.put("TOTAL EMAILS IS ", mailsCollection.size() + " with 4 handJOBs");
+      mailsCollection.put("TOTAL EMAILS IS ", mailsCollection.size() + " with 3 handJOBs");
       return mailsCollection;
    }
 }

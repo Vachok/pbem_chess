@@ -57,11 +57,15 @@ class StartMePChess {
       }
       rcpt.add("143500@gmail.com");
       try{
-         boolean isDone = (( Future ) call).isDone();
-         String s = (( Future ) call).get().toString();
+         boolean isDone = call!=null && (( Future ) call).isDone();
+         String s = call!=null? (( Future ) call).get().toString(): null;
+         messageToUser.infoNoTitles(s);
+         if(Objects.requireNonNull(s).toLowerCase().contains("sendtome" )){ //STOPHERE 23.06.2018 (6:13)
+
          boolean b = new EChecker().sendMail(rcpt, System.currentTimeMillis() + " " + isDone, s);
-         if(b){ Utilit.exitWitnClean(0); }
-         else{ Utilit.exitWitnClean(63); }
+            if(b){ messageToUser.errorAlert("Utilit", "exitWitnClean", "0"); }
+         }
+         else{ messageToUser.errorAlert("Utilit", "exitWitnClean", "63"); }
       }
       catch(InterruptedException | ExecutionException | NullPointerException e){
          messageToUser.out("StartMePChess_61", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
@@ -76,7 +80,7 @@ class StartMePChess {
    private static void whatNextToDo() {
       String s;
       Scanner scanner = new Scanner(System.in);
-      messageToUser.infoNoTitles(toUTF("Введите комманду. Или нажмите h, для вызова помощи."));
+      messageToUser.infoNoTitles(toUTF("Введите комманду. OR нажмите h, для вызова помощи."));
       try{ scanner.next();}
 
       catch(NoSuchElementException e){

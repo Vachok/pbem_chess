@@ -50,3 +50,8 @@ mes/
 /EChecker.properties
 chess.properties
 Test Results - CliBuildRunJar.xml
+ECheckerTest.properties
+/Test Results - pbem_chess_\[build\].html
+Test Results - pbem_chess_[build].html
+etClassPath/
+src/main/resources/javadoc.options
