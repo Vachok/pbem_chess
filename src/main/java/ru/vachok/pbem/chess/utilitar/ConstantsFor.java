@@ -1,9 +1,12 @@
 package ru.vachok.pbem.chess.utilitar;
 
 
+import ru.vachok.messenger.MessageCons;
+import ru.vachok.messenger.MessageToUser;
 
-import java.io.UnsupportedEncodingException;
-import java.util.logging.Logger;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.Arrays;
 
 
 /**
@@ -16,62 +19,56 @@ public enum ConstantsFor {
     * Просто OK!
     */
    OK;
+
    /**
     * Таймаут 1000мс. 1 сек.
     */
    public static final int TIMEOUT_1000 = 1000;
-   /**
-    * Simple Name класса, для поиска настроек
-    */
-   private static final String SOURCE_CLASS = ConstantsFor.class.getSimpleName();
 
    /**
-    * @see Logger
+    * Выход с ошибкой
     */
-   private static final Logger LOGGER = Logger.getLogger(SOURCE_CLASS);
+   public static final int BAD = 666;
+
+   private static InetAddress vachokRu;
+
    /**
-    * Преобразование в <b>UTF-8</b>
-    *
-    * @param s строка для преобразования
-    * @return Windows -1251 {@link String }
+    * Доступность <a href="http://www.vachok.ru" target=_blank></a>
     */
-   public static String toUTF(String s) {
-      try{
-         return new String(s.getBytes(), "UTF-8");
-      }
-      catch(UnsupportedEncodingException e){
-         LOGGER.throwing(SOURCE_CLASS, "toUTF ", e);
-      }
-      return "Can't convert to UTF-8!";
+   private static boolean regIsOk;
+
+   /**
+    * {@link #regIsOk}
+    *
+    * @return true = доступен.
+    */
+   public static boolean getRegIsOk() {
+      return regIsOk;
    }
-   /**
-    * Преобразование в <b>Windows-1251</b>
-    *
-    * @param s строка для преобразования
-    * @return Windows -1251 {@link String }
-    */
-   public static String toW1251(String s) {
+
+   static {
       try{
-         return new String(s.getBytes(), "Windows-1251");
+         vachokRu = InetAddress.getByName("vachok.ru");
+         regIsOk = vachokRu.isReachable(TIMEOUT_1000);
       }
-      catch(UnsupportedEncodingException e){
-         LOGGER.throwing(SOURCE_CLASS, "toW1251", e);
+      catch(IOException e){
+         MessageToUser messageToUser = new MessageCons();
+         messageToUser.out("ConstantsFor_29", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
+         messageToUser.errorAlert("ConstantsFor", e.getMessage(), Arrays.toString(e.getStackTrace()));
       }
-      return "Can't convert to Windows-1251!";
    }
+
    /**
-    * Преобразование в <b>UNICODE</b>
+    * Вместо {@code toString}...
     *
-    * @param s строка для преобразования
-    * @return UNICODE {@link String }
+    * @return строка "типа" {@code toString}
     */
-   public static String toUnicode(String s) {
-      try{
-         return new String(s.getBytes(), "UNICODE");
-      }
-      catch(UnsupportedEncodingException e){
-         LOGGER.throwing(SOURCE_CLASS, "toUnicode", e);
-      }
-      return "Can't convert to UNICODE!";
+   public static String con() {
+      return "ConstantsFor{" +
+            "OK=" + OK +
+            ", regIsOk=" + regIsOk +
+            ", TIMEOUT_1000=" + TIMEOUT_1000 +
+            ", vachokRu=" + vachokRu +
+            '}';
    }
 }

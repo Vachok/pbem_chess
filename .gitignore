@@ -27,5 +27,25 @@ gradlew.bat
 /hs_err_pid5068.log
 /replay_pid5068.log
 /hs_err_pid10480.log
-/chess.iws
-/chess.ipr
+*.iws
+*.ipr
+*.prn
+*.log
+/logs/
+/regpass
+SimpleEmailBinchessMail.properties
+Test Results - StartMePChessTest.html
+*.obj
+Test Results - StartMePChessTest_mapAndSend.html
+/StartMePChessTest_mapAndSend.html
+/src/main/resources/cover/
+/src/console.txt
+SimpleEmailREGchessMail.properties
+1.Re
+2.RE
+*.eem
+3.RE
+mes/
+/src/main/resources/a.sql
+/EChecker.properties
+chess.properties

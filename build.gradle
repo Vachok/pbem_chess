@@ -6,7 +6,7 @@ plugins {
     id 'war'
 }
 group 'ru.vachok.pbem.chess'
-version '0.16'
+version '0.17'
 mainClassName = group + '.StartMePChess'
 sourceCompatibility = 1.10
 sourceSets {
@@ -58,16 +58,15 @@ jar {
 
 test {
     useTestNG()
-    setMaxParallelForks(6)
     testLogging.showStandardStreams = true
     beforeTest { descriptor ->
         logger.lifecycle("Running test: " + descriptor)
     }
     failFast = false
     onOutput { descriptor, event ->
-        logger.lifecycle("Test: " + descriptor + " produced standard out/err: " + event.message)
+        logger.lifecycle("OOPS : " + descriptor + " produced standard out/err: " + event.message)
     }
     javadoc{
-  /*-encoding "UTF-8" -linkofline -html5 -javafx -nohelp -version -doctitle "ÿ‡ıÏ‡Ú˚ ÔÓ-email. Old School, but COOL!", -bottom "<a href="https://github.com/Vachok/pbem_chess" target=_blank>GitHub</a>"*/
+  /*-encoding "UTF-8" -linkofline -html5 -javafx -nohelp -version -doctitle "√ò√†√µ√¨√†√≤√ª √Ø√Æ-email. Old School, but COOL!", -bottom "<a href="https://github.com/Vachok/pbem_chess" target=_blank>GitHub</a>"*/
     }
 }
