@@ -16,10 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -30,7 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @see EMailsChess
  * @since 20.06.2018 (11:43)
  */
-public class EChecker implements Callable, EMailsChess {
+public class EChecker implements Callable {
 
    /**
     * Simple Name класса, для поиска настроек
@@ -41,6 +38,8 @@ public class EChecker implements Callable, EMailsChess {
 
    private static MessageToUser messageToUser = new MessageCons();
 
+   private Map<String, String> mailS = new ConcurrentHashMap<>();
+
    /**
     * Отправка сообщения электронной почты.
     *
@@ -49,7 +48,6 @@ public class EChecker implements Callable, EMailsChess {
     * @param msg   сообщение, для отправки.
     * @return true = ok.
     */
-   @Override
    public boolean sendMail(List<String> recep, String subj, String msg) {
       InitProperties initPr = new DbProperties("mailP");
       Properties mailP = initPr.getProps();
@@ -82,16 +80,7 @@ public class EChecker implements Callable, EMailsChess {
     */
    @Override
    public Object call() {
-      return chkMails();
-   }
 
-   /**
-    * Мапа почтовых сообщений
-    *
-    * @return {@link ConcurrentHashMap} , заголовок - контент
-    */
-   @Override
-   public ConcurrentHashMap<String, String> chkMails() {
       InitProperties initProperties = new DbProperties("mailP");
       Properties mailP = initProperties.getProps();
       Properties authP = new DbProperties("SimpleEmailBinchess").getProps();
@@ -100,32 +89,31 @@ public class EChecker implements Callable, EMailsChess {
       String host = mailP.getProperty("host");
       String user = authP.getProperty("userName");
       String password = authP.getProperty("pass");
-      ConcurrentHashMap<String, String> mailsCollection = new ConcurrentHashMap<>();
-      mailsCollection.put("Самая первая запись", "Encoding = no");
+      ConcurrentHashMap<String, String> mailS = new ConcurrentHashMap<>();
+      mailS.put("Самая первая запись", "Encoding = no");
       try{
          Store store = chkSess.getStore("pop3s");
          store.connect(host, user, password);
          Folder inBox = store.getFolder("Inbox");
          inBox.open(Folder.READ_ONLY);
          Message[] mailSMessages = inBox.getMessages();
-         mailsCollection.put("Вторая", Utilit.toUTF("UTF-8"));
+         mailS.put("Вторая", Utilit.toUTF("UTF-8"));
          for(Message mailSMessage : mailSMessages){
             File file = new File("mes\\" + mailSMessage.getMessageNumber() + ".eem");
             InputStream inputStreamM = mailSMessage.getInputStream();
-
             byte[] bytes = inputStreamM.readAllBytes();
             String msg = LocalDateTime.now() + "\n" + mailSMessage.getSentDate().toString() + "\nFrom STREAM-bytes is: " + bytes.length + "\n" + new String(bytes);
             String key = "Message number " + mailSMessage.getMessageNumber() + "_" + System.currentTimeMillis() + ".\n\n" + "SUBJECT : " + mailSMessage.getSubject() + ";";
-            mailsCollection.put(key, msg);
+            mailS.put(key, msg);
             FileUtils.writeStringToFile(file, key + "\n MESSAGE: " + msg, "UTF-8");
          }
+         mailS.put(Utilit.toW1251("Третья..."), "ENC 1251");
+         mailS.put("TOTAL EMAILS IS ", mailS.size() + " with 3 handJOBs");
       }
       catch(IOException | NoSuchElementException | MessagingException e){
          messageToUser.out("EChecker_116", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
          messageToUser.errorAlert("EChecker", e.getMessage(), Arrays.toString(e.getStackTrace()));
       }
-      mailsCollection.put(Utilit.toW1251("Третья..."), "ENC 1251");
-      mailsCollection.put("TOTAL EMAILS IS ", mailsCollection.size() + " with 3 handJOBs");
-      return mailsCollection;
+      return mailS;
    }
 }

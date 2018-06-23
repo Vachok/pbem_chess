@@ -4,16 +4,17 @@ package ru.vachok.pbem.chess;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.pbem.chess.emails.EChecker;
-import ru.vachok.pbem.chess.utilitar.ConstantsFor;
+import ru.vachok.pbem.chess.emails.MailWorksLocal;
 import ru.vachok.pbem.chess.utilitar.Utilit;
 
 import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import static ru.vachok.pbem.chess.utilitar.Utilit.*;
+import static ru.vachok.pbem.chess.utilitar.Utilit.toUTF;
+import static ru.vachok.pbem.chess.utilitar.Utilit.whatNextToDo;
 
 
 /**
@@ -23,7 +24,6 @@ import static ru.vachok.pbem.chess.utilitar.Utilit.*;
  *
  * @since 19.06.2018 (21:29)
  */
-@SuppressWarnings ("FeatureEnvy")
 class StartMePChess {
 
    /**
@@ -31,7 +31,10 @@ class StartMePChess {
     */
    private static final String SOURCE_CLASS = StartMePChess.class.getSimpleName();
 
-   private static List<String> rcpt = new ArrayList<>();
+   /**
+    * Лист адресатов, если надо отправить.
+    */
+   private static final List<String> RCPT = new ArrayList<>();
 
    /**
     * Общение с пользователем.
@@ -46,61 +49,35 @@ class StartMePChess {
     * @see Utilit#checkTime() Utilit#checkTime()Utilit#checkTime()
     */
    public static void main(String[] args) {
-      Object call = null;
+      ExecutorService executorService = Executors.newWorkStealingPool();
+      Object callOBJ = new Object();
       String helloThere = toUTF(new Utilit().checkTime());
       messageToUser.info(SOURCE_CLASS, "main ID 16", helloThere);
       Callable mapA = new EChecker();
-      try{ call = Executors.newSingleThreadExecutor().submit(mapA); }
+      try{ callOBJ = executorService.submit(mapA); }
       catch(Exception e){
          messageToUser.out("StartMePChess_61", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
          messageToUser.errorAlert("StartMePChess", e.getMessage(), Arrays.toString(e.getStackTrace()));
       }
-      rcpt.add("143500@gmail.com");
-      try{
-         boolean isDone = call!=null && (( Future ) call).isDone();
-         String s = call!=null? (( Future ) call).get().toString(): null;
-         messageToUser.infoNoTitles(s);
-         if(Objects.requireNonNull(s).toLowerCase().contains("sendtome" )){ //STOPHERE 23.06.2018 (6:13)
-
-         boolean b = new EChecker().sendMail(rcpt, System.currentTimeMillis() + " " + isDone, s);
-            if(b){ messageToUser.errorAlert("Utilit", "exitWitnClean", "0"); }
-         }
-         else{ messageToUser.errorAlert("Utilit", "exitWitnClean", "63"); }
-      }
-      catch(InterruptedException | ExecutionException | NullPointerException e){
-         messageToUser.out("StartMePChess_61", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
-         messageToUser.errorAlert("StartMePChess", e.getMessage(), Arrays.toString(e.getStackTrace()));
-         Thread.currentThread().interrupt();
-      }
+      RCPT.add("143500@gmail.com");
+      Runnable whatNeRUN = () -> whatNextToDo(); //STOPHERE
    }
 
-   /**
-    * Определяем дальнейшие действия.
-    */
-   private static void whatNextToDo() {
-      String s;
-      Scanner scanner = new Scanner(System.in);
-      messageToUser.infoNoTitles(toUTF("Введите комманду. OR нажмите h, для вызова помощи."));
-      try{ scanner.next();}
-
-      catch(NoSuchElementException e){
-         messageToUser.out("StartMePChess_52", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
-         exitWitnClean(58);
-      }
-      while(scanner.hasNext()){
-         s = scanner.nextLine();
-         switch(s){
-            case "get":
-               break;
-            case "h":
-               helpMe(SOURCE_CLASS);
-               break;
-            case "exit":
-               exitWitnClean(63);
-               break;
-            default:
-               exitWitnClean(ConstantsFor.OK.ordinal());
+   private static void mapMail(Object callOBJ) {
+      Map<String, String> call = ( Map<String, String> ) callOBJ;
+      try{
+         boolean isDone = call!=null && (( Future ) call).isDone();
+         String s = call!=null? call.toString(): null;
+         messageToUser.infoNoTitles(s);
+         if(Objects.requireNonNull(s).toLowerCase().contains("sendtome")){
+            boolean b = new EChecker().sendMail(RCPT, System.currentTimeMillis() + " " + isDone, s);
+            if(b){ messageToUser.errorAlert("Utilit", "exitWitnClean", "0"); }
          }
+         else{ new MailWorksLocal(call);}
+      }
+      catch(NullPointerException e){
+         messageToUser.out("StartMePChess_61", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
+         messageToUser.errorAlert("StartMePChess", e.getMessage(), Arrays.toString(e.getStackTrace()));
       }
    }
 }

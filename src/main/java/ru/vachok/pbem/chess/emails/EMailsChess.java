@@ -2,7 +2,6 @@ package ru.vachok.pbem.chess.emails;
 
 
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -19,16 +18,10 @@ public interface EMailsChess {
     *
     * @param recep адреса электронной почты <b>To</b>.
     * @param msg   сообщение, для отправки.
+    * @param subj тема
     * @return статус. true = удача.
     */
    boolean sendMail(List<String> recep, String subj, String msg);
 
-   /**
-    * Мапа вида
-    * <p>
-    * {@code ЗАГОЛОВОК - ТЕКСТ}
-    *
-    * @return сообщения построчно
-    */
-   ConcurrentHashMap<String, String> chkMails();
+   String checkMail();
 }

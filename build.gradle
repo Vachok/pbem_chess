@@ -6,7 +6,7 @@ plugins {
     id 'war'
 }
 group 'ru.vachok.pbem.chess'
-version '0.17'
+version '0.18'
 mainClassName = group + '.StartMePChess'
 sourceCompatibility = 1.10
 sourceSets {
@@ -14,14 +14,14 @@ sourceSets {
         resources {
             srcDirs = ["src/main/java", "src/main/resources"]
             includes = ["**/*.fxml", "**/*.css", "**/*.properties", "**/*.png", "**/*.html",
-                        "**/*", ".sql", "**/*.jar", "**/*regpass"]
+                        "**/*", ".sql", "**/*.jar", "regpass"]
         }
     }
     test {
         resources {
             srcDirs = ["src/test/java", "src/test/resources"]
             includes = ["**/*.fxml", "**/*.css", "**/*.properties", "**/*.png", "**/*.jar",
-                        "**/*regpass"]
+                        "regpass"]
         }
     }
 }
@@ -55,7 +55,6 @@ jar {
     }
     from configurations.compile.collect() { it.isDirectory() ? it : zipTree(it) }
 }
-
 test {
     useTestNG()
     testLogging.showStandardStreams = true

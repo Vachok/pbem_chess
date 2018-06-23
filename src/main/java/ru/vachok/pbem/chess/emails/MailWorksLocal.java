@@ -9,67 +9,87 @@ import javax.mail.Message;
 import javax.mail.MessagingException;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.concurrent.Callable;
 
 
 /**
  * @since 22.06.2018 (22:26)
  */
-class MailWorksLocal implements Runnable {
+public class MailWorksLocal implements Callable {
 
    private static final String SOURCE_CLASS = MailWorksLocal.class.getSimpleName();
 
    private static MessageToUser messageToUser = new MessageCons();
 
+   /**
+    * @see EChecker
+    */
    private Message[] mailMessages;
 
-   private byte[] bytes;
+   private Callable<Object> thisObject;
 
-   MailWorksLocal(Message[] mailMessages) {
+   private Map<String, String> mapMail;
+
+   /**
+    * Декодированные байты почтового сообщения.
+    */
+   private byte[] mailMSGBytes;
+
+   /**
+    * Конструктор
+    *
+    * @param mailMessages массив сообщения от сервера.
+    */
+   public MailWorksLocal(Message[] mailMessages) {
       this.mailMessages = mailMessages;
-   }
-
-   public byte[] getMailMessageBytes() {
-      return bytes;
-   }
-
-   @Deprecated (since = "23.06.2018 (5:54)" )
-   public void mailS() {
-      int length = mailMessages.length;
-      messageToUser.infoNoTitles(length + " is total count of e-mails" );
-      try{bytes = decode(mailMessages).readAllBytes();}
-      catch(IOException e){
-         messageToUser.out("MailWorksLocalTest_39", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n" )).getBytes());
-         messageToUser.errorAlert("MailWorksLocalTest", e.getMessage(), Arrays.toString(e.getStackTrace()));
-      }
+      thisObject = ( Callable<Object> ) mailS();
    }
 
    /**
-    * When an object implementing interface <code>Runnable</code> is used
-    * to create a thread, starting the thread causes the object's
-    * <code>run</code> method to be called in that separately executing
-    * thread.
-    * <p>
-    * The general contract of the method <code>run</code> is that it may
-    * take any action whatsoever.
-    *
-    * @see Thread#run()
+    * Заполняет {@link #mailMSGBytes}
     */
-   @Override
-   public void run() {
-      mailS();
+   private Object mailS() {
+      Object o = mailMessages;
+      int length = mailMessages.length;
+      messageToUser.infoNoTitles(length + " is total count of e-mails");
+      try{ mailMSGBytes = decode(mailMessages).readAllBytes();}
+      catch(IOException e){
+         messageToUser.out("MailWorksLocalTest_39", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
+         messageToUser.errorAlert("MailWorksLocalTest", e.getMessage(), Arrays.toString(e.getStackTrace()));
+      }
+      return o;
    }
 
+   /**
+    * @param mapMail мапа, полученная из чекера.
+    * @see EChecker
+    */
+   public MailWorksLocal(Map<String, String> mapMail) {
+      this.mapMail = mapMail;
+   }
+
+   /**
+    * Computes a result, or throws an exception if unable to do so.
+    *
+    * @return computed result
+    * @throws Exception if unable to compute a result
+    */
+   @Override
+   public Object call() throws Exception {
+      return thisObject.call();
+   }
    private BASE64DecoderStream decode(Message[] inputMesEnc) {
       for(Message m : inputMesEnc){
          try(BASE64DecoderStream outputStream = new BASE64DecoderStream(m.getInputStream())){
             return outputStream;
          }
          catch(MessagingException | IOException e){
-            messageToUser.out("MailWorksLocalTest_48", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n" )).getBytes());
+            messageToUser.out("MailWorksLocalTest_48", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
             messageToUser.errorAlert("MailWorksLocalTest", e.getMessage(), Arrays.toString(e.getStackTrace()));
          }
       }
       Thread.currentThread().interrupt();
-      throw new NullPointerException("Nothing here..." );
+      throw new NullPointerException("Nothing here...");
    }
 }
