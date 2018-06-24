@@ -55,4 +55,6 @@ Test Results - pbem_chess_[build].html
 etClassPath/
 src/main/resources/javadoc.options
 ESenderTest.properties
-!/src/test/resources/temp-testng-customsuite.xml
+!/src/test/resources/Email-Work-Suite.xml
+src/main/webapp/
+tasks.txt

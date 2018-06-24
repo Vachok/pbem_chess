@@ -35,6 +35,16 @@ public enum ConstantsFor {
     */
    public static final long TIMEOUT_100000 = 1000000;
 
+   /**
+    * 1 мегабайт в байтах
+    */
+   public static final int MEGABYTE = 1024 * 1024 * 1024;
+
+   /**
+    * Выход с предупреждением
+    */
+   public static final int WARN = 333;
+
    private static InetAddress vachokRu;
 
    /**
