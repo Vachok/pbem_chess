@@ -1,6 +1,5 @@
 /*
-"C:\Program Files\Java\jdk-10\bin\javadoc.exe"
--J-Xmx1024m -locale ru_RU -private -splitindex -use -author -version -encoding UTF-8 -html5 -javafx -nohelp -doctitle "Шахматы по-email. Old School, but COOL!," -bottom "<a href=https://github.com/Vachok/pbem_chess target=_blank>GitHub</a>" -d R:\chess\docs @C:\Users\14350\AppData\Local\Temp\javadoc_args
+"C:\Program Files\Java\jdk-10.0.1\bin\javadoc.exe" -J-Xmx1024m -locale ru_RU -private -splitindex -use -author -version -encoding UTF-8 -html5 -javafx -nohelp -doctitle "Шахматы по-email. Old School, but COOL!," -bottom "<a href=https://github.com/Vachok/pbem_chess target=_blank>GitHub</a>" -d R:\chess\docs @C:\Users\14350\AppData\Local\Temp\javadoc_args
 */
 -encoding "UTF-8"
 -html5

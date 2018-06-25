@@ -12,6 +12,7 @@ import java.net.InetAddress;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Scanner;
 import java.util.logging.Logger;
 
 import static java.util.logging.Level.WARNING;
@@ -92,7 +93,6 @@ public class Utilit {
       }
       return "Can't convert to UNICODE!";
    }
-
    /**
     * Преобразование в <b>Windows-1251</b>
     *
@@ -116,7 +116,6 @@ public class Utilit {
     * @param reaSon номер строки-вызова
     */
    public static void exitWitnClean(int reaSon) {
-
       File[] prnFiles = new File(".").listFiles();
       File dirLog = new File("logs\\");
       try{
@@ -152,13 +151,6 @@ public class Utilit {
       return s;
    }
 
-   /**
-    * Проверка доступности он-лайн.
-    * <p>
-    * 1.<a href="imap.yandex.com" target=_blank>IMAP Yandex</a>
-    * <p>
-    * 2.{@code a161.eatmeat.ru}
-    */
    public String chkServers() {
       String s1 = "";
       try{
@@ -176,5 +168,29 @@ public class Utilit {
          Thread.currentThread().interrupt();
       }
       return s1;
+   }
+
+   /**
+    * Определяем дальнейшие действия.
+    */
+   public static void whatNextToDo() {
+      String s;
+      Scanner scanner = new Scanner(System.in);
+      messageToUser.infoNoTitles(toUTF("Введите комманду. OR нажмите h, для вызова помощи."));
+      while(scanner.hasNext()){
+         s = scanner.nextLine();
+         switch(s){
+            case "get":
+               break;
+            case "h":
+               helpMe(SOURCE_CLASS);
+               break;
+            case "exit":
+               exitWitnClean(63);
+               break;
+            default:
+               throw new UnsupportedOperationException(Utilit.toUTF("ЗАПРЕЩАЮ!"));
+         }
+      }
    }
 }
