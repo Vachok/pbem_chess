@@ -32,7 +32,6 @@ gradlew.bat
 *.prn
 *.log
 /logs/
-/regpass
 SimpleEmailBinchessMail.properties
 Test Results - StartMePChessTest.html
 *.obj
@@ -58,4 +57,4 @@ ESenderTest.properties
 !/src/test/resources/Email-Work-Suite.xml
 src/main/webapp/
 tasks.txt
-/src/main/resources/regpass
+db.txt
