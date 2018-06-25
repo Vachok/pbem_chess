@@ -58,12 +58,12 @@ class StartMePChess {
       Object callOBJ = new Object();
       String helloThere = toUTF(new Utilit().checkTime());
       messageToUser.info(SOURCE_CLASS, "main ID 16", helloThere);
-      Callable mapA = new EChecker();
-      try{ callOBJ = mapA.call(); }
-      catch(Exception e){
-         messageToUser.out("StartMePChess_61", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
-         messageToUser.errorAlert("StartMePChess", e.getMessage(), Arrays.toString(e.getStackTrace()));
-      }
+      Runnable mapA = new EChecker();
+//      try{ callOBJ = mapA.call(); }
+//      catch(Exception e){
+//         messageToUser.out("StartMePChess_61", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
+//         messageToUser.errorAlert("StartMePChess", e.getMessage(), Arrays.toString(e.getStackTrace()));
+//      }
       RCPT.add("143500@gmail.com");
       String s = callOBJ.toString();
       if(s.toLowerCase().contains("gettome:")){

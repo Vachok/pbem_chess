@@ -17,8 +17,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -27,7 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @see EMailsChess
  * @since 20.06.2018 (11:43)
  */
-public class EChecker implements Callable {
+public class EChecker implements Runnable {
 
    /**
     * Simple Name класса, для поиска настроек
@@ -40,32 +43,35 @@ public class EChecker implements Callable {
 
    private Map<String, String> mailS = new ConcurrentHashMap<>();
 
+
    /**
     * Отправка сообщения электронной почты.
     *
-    * @param recep email адреса.
-    * @param subj  тема сообщения.
-    * @param msg   сообщение, для отправки.
+    * @param rcpt email адреса.
+    * @param subj тема сообщения.
+    * @param msg  сообщение, для отправки.
     * @return true = ok.
     */
-   public boolean sendMail(List<String> recep, String subj, String msg) {
+   public boolean sendMail(List<String> rcpt, String subj, String msg) {
       InitProperties initPr = new DbProperties("mailP");
       Properties mailP = initPr.getProps();
       Authenticator authenticator = new VachokMailer.AuthForChess();
-      (( VachokMailer.AuthForChess ) authenticator).getPasswordAuthentication();
+      ((VachokMailer.AuthForChess) authenticator).getPasswordAuthentication();
       Session session = Session.getInstance(mailP, authenticator);
       Properties cur = session.getProperties();
       initPr = new FileProps(SOURCE_CLASS);
       initPr.setProps(cur);
       Provider regRu = p.chessMail();
-      Email simpleEmail = new SimpleEmailREG(recep, subj, msg).getMailBin();
-      try{ session.setProvider(regRu); }
-      catch(NoSuchProviderException e){
+      Email simpleEmail = new SimpleEmailREG(rcpt, subj, msg).getMailBin();
+      try {
+         session.setProvider(regRu);
+      } catch (NoSuchProviderException e) {
          messageToUser.out("EChecker_114", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
          messageToUser.errorAlert(SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
       }
-      try{simpleEmail.send();}
-      catch(EmailException e){
+      try {
+         simpleEmail.send();
+      } catch (EmailException e) {
          messageToUser.out("EChecker_149", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
          messageToUser.errorAlert("EChecker", e.getMessage(), Arrays.toString(e.getStackTrace()));
          return false;
@@ -74,31 +80,26 @@ public class EChecker implements Callable {
    }
 
    /**
-    * Computes a result, or throws an exception if unable to do so.
-    *
-    * @return computed result
+    * Создаёт {@link Map} заголовки - base64 mail
     */
-   @Override
-   public Object call() {
-
+   private synchronized Map<String, String> letParty() {
       InitProperties initProperties = new DbProperties("mailP");
       Properties mailP = initProperties.getProps();
       Properties authP = new DbProperties("SimpleEmailBinchess").getProps();
-
       Session chkSess = Session.getDefaultInstance(mailP);
       String host = mailP.getProperty("host");
       String user = authP.getProperty("userName");
       String password = authP.getProperty("pass");
-      ConcurrentHashMap<String, String> mailS = new ConcurrentHashMap<>();
+      mailS = new ConcurrentHashMap<>();
       mailS.put("Самая первая запись", "Encoding = no");
-      try{
+      try {
          Store store = chkSess.getStore("pop3s");
          store.connect(host, user, password);
          Folder inBox = store.getFolder("Inbox");
          inBox.open(Folder.READ_ONLY);
          Message[] mailSMessages = inBox.getMessages();
          mailS.put("Вторая", Utilit.toUTF("UTF-8"));
-         for(Message mailSMessage : mailSMessages){
+         for (Message mailSMessage : mailSMessages) {
             File file = new File("mes\\" + mailSMessage.getMessageNumber() + ".eem");
             InputStream inputStreamM = mailSMessage.getInputStream();
             byte[] bytes = inputStreamM.readAllBytes();
@@ -109,11 +110,24 @@ public class EChecker implements Callable {
          }
          mailS.put(Utilit.toW1251("Третья..."), "ENC 1251");
          mailS.put("TOTAL EMAILS IS ", mailS.size() + " with 3 handJOBs");
-      }
-      catch(IOException | NoSuchElementException | MessagingException e){
+      } catch (IOException | NoSuchElementException | MessagingException e) {
          messageToUser.out("EChecker_116", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
          messageToUser.errorAlert("EChecker", e.getMessage(), Arrays.toString(e.getStackTrace()));
+         notifyAll();
       }
+      notifyAll();
       return mailS;
+   }
+
+   @Override
+   public synchronized void run() {
+      String s = this.toString();
+      if (s.toLowerCase().contains("gettome:")) {
+         Pattern p = Pattern.compile("^(gettome:).*[,]");
+         Matcher m = p.matcher(s);
+         while (m.find()) s = p.toString();
+         messageToUser.info(SOURCE_CLASS, Utilit.toUTF("Строка для передачи в парсер:\n"), s + "\n");
+         this.mailS = letParty();
+      }
    }
 }

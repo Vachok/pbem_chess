@@ -3,18 +3,16 @@ plugins {
     id 'java'
     id 'application'
     id 'idea'
-    id 'war'
 }
 group 'ru.vachok.pbem.chess'
 version('0.19')
 mainClassName = group + '.StartMePChess'
-sourceCompatibility = 1.10
+sourceCompatibility = 1.9
 sourceSets {
     main {
         resources {
             srcDirs = ["src/main/java", "src/main/resources"]
-            includes = ["**/*.fxml", "**/*.css", "**/*.properties", "**/*.png", "**/*.html",
-                        "**/*", ".sql", "**/*.jar", "regpass"]
+            includes = ["**/*.fxml", "**/*.css", "**/*.properties", "**/*.png", "**/*.html", ".sql", "**/*.jar"]
         }
     }
     test {
@@ -30,7 +28,10 @@ repositories {
 }
 dependencies {
     compile fileTree('lib\\')
-    providedCompile 'javax.servlet:javax.servlet-api:3.1.0'
+    // https://mvnrepository.com/artifact/io.vertx/vertx-core
+    compile group: 'io.vertx', name: 'vertx-core', version: '3.5.2'
+    // https://mvnrepository.com/artifact/io.vertx/vertx-rx-java
+    compile group: 'io.vertx', name: 'vertx-rx-java', version: '3.5.2'
     // https://mvnrepository.com/artifact/org.mockito/mockito-all
     testCompile group: 'org.mockito', name: 'mockito-all', version: '1.8.4'
     // https://mvnrepository.com/artifact/commons-io/commons-io
@@ -66,12 +67,8 @@ test {
     beforeTest { descriptor ->
         logger.lifecycle("Running test: " + descriptor)
     }
-    failFast = false
+    failFast = false}
 
-    onOutput { descriptor, event ->
-        logger.lifecycle(descriptor + " out/err: " + event.message)
-    }
     javadoc{
   /*-encoding "UTF-8" -linkofline -html5 -javafx -nohelp -version -doctitle "Øàõìàòû ïî-email. Old School, but COOL!", -bottom "<a href="https://github.com/Vachok/pbem_chess" target=_blank>GitHub</a>"*/
     }
-}
