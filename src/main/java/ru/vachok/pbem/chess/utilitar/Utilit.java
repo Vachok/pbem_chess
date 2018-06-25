@@ -52,12 +52,40 @@ public class Utilit {
    }
 
    /**
-    * Помощь на экран.
+    * Преобразование в <b>UNICODE</b>
     *
-    * @param whatHelpNeeds чем помочь?
+    * @param s строка для преобразования
+    * @return UNICODE {@link String }
     */
-   public static void helpMe(String whatHelpNeeds) {
-      throw new UnsupportedOperationException(toUTF("03 ЕДЕТ!\n\n") + whatHelpNeeds);
+   public static String toUnicode(String s) {
+      try{
+         return new String(s.getBytes(), "UNICODE");
+      }
+      catch(UnsupportedEncodingException e){
+         messageToUser.out("Utilit_86", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
+         messageToUser.errorAlert(SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
+      }
+      return "Can't convert to UNICODE!";
+   }
+   /**
+    * Определяем дальнейшие действия.
+    */
+   public static void whatNextToDo() {
+      Scanner scanner = new Scanner(System.in);
+      String s = scanner.nextLine();
+      messageToUser.infoNoTitles(toUTF("Введите комманду. OR нажмите h, для вызова помощи."));
+      switch(s){
+         case "get":
+            break;
+         case "h":
+            helpMe(SOURCE_CLASS);
+            break;
+         case "exit":
+            exitWitnClean(63);
+            break;
+         default:
+            throw new UnsupportedOperationException(Utilit.toUTF("ЗАПРЕЩАЮ!"));
+      }
    }
 
    /**
@@ -75,39 +103,6 @@ public class Utilit {
          messageToUser.errorAlert(SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
       }
       return "Can't convert to UTF-8!";
-   }
-
-   /**
-    * Преобразование в <b>UNICODE</b>
-    *
-    * @param s строка для преобразования
-    * @return UNICODE {@link String }
-    */
-   public static String toUnicode(String s) {
-      try{
-         return new String(s.getBytes(), "UNICODE");
-      }
-      catch(UnsupportedEncodingException e){
-         messageToUser.out("Utilit_86", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
-         messageToUser.errorAlert(SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
-      }
-      return "Can't convert to UNICODE!";
-   }
-   /**
-    * Преобразование в <b>Windows-1251</b>
-    *
-    * @param s строка для преобразования
-    * @return Windows -1251 {@link String }
-    */
-   public static String toW1251(String s) {
-      try{
-         return new String(s.getBytes(), "Windows-1251");
-      }
-      catch(UnsupportedEncodingException e){
-         messageToUser.out("Utilit_103", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
-         messageToUser.errorAlert(SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
-      }
-      return "Can't convert to Windows-1251!";
    }
 
    /**
@@ -138,6 +133,15 @@ public class Utilit {
    }
 
    /**
+    * Помощь на экран.
+    *
+    * @param whatHelpNeeds чем помочь?
+    */
+   public static void helpMe(String whatHelpNeeds) {
+      throw new UnsupportedOperationException(toUTF("03 ЕДЕТ!\n\n") + whatHelpNeeds);
+   }
+
+   /**
     * Строка приветствия.
     *
     * @return строка в зависимости от времени суток, возвращает разное приветствие.
@@ -150,7 +154,22 @@ public class Utilit {
       if(LocalTime.now().isBefore(LocalTime.of(12, 0))) s = "Доброе утро!";
       return s;
    }
-
+   /**
+    * Преобразование в <b>Windows-1251</b>
+    *
+    * @param s строка для преобразования
+    * @return Windows -1251 {@link String }
+    */
+   public static String toW1251(String s) {
+      try{
+         return new String(s.getBytes(), "Windows-1251");
+      }
+      catch(UnsupportedEncodingException e){
+         messageToUser.out("Utilit_103", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
+         messageToUser.errorAlert(SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
+      }
+      return "Can't convert to Windows-1251!";
+   }
    public String chkServers() {
       String s1 = "";
       try{

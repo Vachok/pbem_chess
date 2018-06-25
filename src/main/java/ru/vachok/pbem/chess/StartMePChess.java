@@ -4,17 +4,22 @@ package ru.vachok.pbem.chess;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.pbem.chess.emails.EChecker;
+import ru.vachok.pbem.chess.emails.ESender;
 import ru.vachok.pbem.chess.emails.MailWorksLocal;
+import ru.vachok.pbem.chess.utilitar.ConstantsFor;
 import ru.vachok.pbem.chess.utilitar.Utilit;
 
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static ru.vachok.pbem.chess.utilitar.Utilit.toUTF;
-import static ru.vachok.pbem.chess.utilitar.Utilit.whatNextToDo;
 
 
 /**
@@ -48,23 +53,30 @@ class StartMePChess {
     * @param args null
     * @see Utilit#checkTime() Utilit#checkTime()Utilit#checkTime()
     */
-   public static void main(String[] args) {
-      ExecutorService executorService = Executors.newWorkStealingPool();
+   public static void main(String[] args) throws MalformedURLException, UnsupportedEncodingException {
+      ExecutorService executorService = Executors.newSingleThreadExecutor();
       Object callOBJ = new Object();
       String helloThere = toUTF(new Utilit().checkTime());
       messageToUser.info(SOURCE_CLASS, "main ID 16", helloThere);
       Callable mapA = new EChecker();
-      try{ callOBJ = executorService.submit(mapA); }
+      try{ callOBJ = mapA.call(); }
       catch(Exception e){
          messageToUser.out("StartMePChess_61", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
          messageToUser.errorAlert("StartMePChess", e.getMessage(), Arrays.toString(e.getStackTrace()));
       }
       RCPT.add("143500@gmail.com");
-      Runnable whatNeRUN = () -> whatNextToDo(); //STOPHERE
+      String s = callOBJ.toString();
+      if(s.toLowerCase().contains("gettome:")){
+         Pattern p = Pattern.compile("chess.vachok.ru"); //STOPHERE
+         Matcher m = p.matcher(s);
+         while(m.find()) s = p.toString();
+         new ESender().sendMe(s);
+      }
+      else{ Utilit.exitWitnClean(ConstantsFor.WARN); }
    }
-
-   private static void mapMail(Object callOBJ) {
-      Map<String, String> call = ( Map<String, String> ) callOBJ;
+  
+   private static void mapMail(Map<String, String> callOBJ) {
+      Map<String, String> call = callOBJ;
       try{
          boolean isDone = call!=null && (( Future ) call).isDone();
          String s = call!=null? call.toString(): null;

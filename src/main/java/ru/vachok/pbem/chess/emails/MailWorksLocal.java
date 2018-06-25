@@ -45,7 +45,6 @@ public class MailWorksLocal implements Callable {
       this.mailMessages = mailMessages;
       thisObject = ( Callable<Object> ) mailS();
    }
-
    /**
     * Заполняет {@link #mailMSGBytes}
     */
