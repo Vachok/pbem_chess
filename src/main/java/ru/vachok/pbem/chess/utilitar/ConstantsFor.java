@@ -45,6 +45,11 @@ public enum ConstantsFor {
     */
    public static final int WARN = 333;
 
+   /**
+    * Название кодировки
+    */
+   public static final String UTF_8 = "UTF-8";
+
    private static InetAddress vachokRu;
 
    /**

@@ -1,6 +1,7 @@
 package ru.vachok.pbem.chess;
 
 
+import org.apache.commons.io.FileUtils;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.pbem.chess.emails.EChecker;
@@ -8,11 +9,13 @@ import ru.vachok.pbem.chess.emails.ESender;
 import ru.vachok.pbem.chess.emails.MailWorksLocal;
 import ru.vachok.pbem.chess.utilitar.ConstantsFor;
 import ru.vachok.pbem.chess.utilitar.Utilit;
+import ru.vachok.pbem.chess.vrtx.VrtClientJDBC;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.util.*;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -59,20 +62,37 @@ class StartMePChess {
       String helloThere = toUTF(new Utilit().checkTime());
       messageToUser.info(SOURCE_CLASS, "main ID 16", helloThere);
       Runnable mapA = new EChecker();
-//      try{ callOBJ = mapA.call(); }
-//      catch(Exception e){
-//         messageToUser.out("StartMePChess_61", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
-//         messageToUser.errorAlert("StartMePChess", e.getMessage(), Arrays.toString(e.getStackTrace()));
-//      }
+      executorService.submit(mapA);
       RCPT.add("143500@gmail.com");
       String s = callOBJ.toString();
       if(s.toLowerCase().contains("gettome:")){
-         Pattern p = Pattern.compile("chess.vachok.ru"); //STOPHERE
+         Pattern p = Pattern.compile("chess.vachok.ru");
          Matcher m = p.matcher(s);
          while(m.find()) s = p.toString();
          new ESender().sendMe(s);
       }
-      else{ Utilit.exitWitnClean(ConstantsFor.WARN); }
+      else{
+         vtrGo();
+         Utilit.exitWitnClean(ConstantsFor.WARN);
+      }
+   }
+
+   private static void vtrGo() {
+      VrtClientJDBC vrtClientJDBC = new VrtClientJDBC();
+      vrtClientJDBC.showSomething();
+      File file = new File("VrtClientJDBC.properties");
+      String fileStr = file.getAbsolutePath();
+      if(file.exists()){
+         try{
+            fileStr = FileUtils.readFileToString(file, "UTF-8");
+         }
+         catch(IOException e){
+            messageToUser.out("StartMePChess_90", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", " ")).getBytes());
+            messageToUser.errorAlert("StartMePChess", e.getMessage(), Arrays.toString(e.getStackTrace()));
+         }
+      }
+      boolean eChecker = new EChecker().sendMail(RCPT, SOURCE_CLASS + " now " + new Date(), fileStr);
+      messageToUser.info(SOURCE_CLASS, "mail is ", eChecker + " " + new Date());
    }
 
    private static void mapMail(Map<String, String> callOBJ) {

@@ -43,7 +43,11 @@ public class MailWorksLocal implements Callable {
     */
    public MailWorksLocal(Message[] mailMessages) {
       this.mailMessages = mailMessages;
-      thisObject = ( Callable<Object> ) mailS();
+      try{
+         mailS();
+      }catch (Exception e){
+         messageToUser.errorAlert("MailWorksLocal", "MailWorksLocal ID 46", e.getMessage());
+      }
    }
    /**
     * Заполняет {@link #mailMSGBytes}

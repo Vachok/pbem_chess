@@ -18,8 +18,6 @@ import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,7 +49,7 @@ public class EChecker implements Runnable {
     * @param subj тема сообщения.
     * @param msg  сообщение, для отправки.
     * @return true = ok.
-    */
+    */ //todo Перенос в SENDER
    public boolean sendMail(List<String> rcpt, String subj, String msg) {
       InitProperties initPr = new DbProperties("mailP");
       Properties mailP = initPr.getProps();
@@ -121,7 +119,9 @@ public class EChecker implements Runnable {
 
    @Override
    public synchronized void run() {
-      String s = this.toString();
+      Map<String, String> cM = letParty();
+      String s = cM.toString();
+      messageToUser.infoNoTitles(s);
       if (s.toLowerCase().contains("gettome:")) {
          Pattern p = Pattern.compile("^(gettome:).*[,]");
          Matcher m = p.matcher(s);

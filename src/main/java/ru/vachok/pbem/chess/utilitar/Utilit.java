@@ -114,10 +114,10 @@ public class Utilit {
    public static void exitWitnClean(int reaSon) {
       File[] prnFiles = new File(".").listFiles();
       File dirLog = new File("logs\\");
-      try{
+      try{if(!dirLog.exists())FileUtils.forceMkdir(dirLog);
          FileUtils.cleanDirectory(dirLog);
-         //noinspection ConstantConditions
-         for(File prnFile : prnFiles){
+
+         for(File prnFile : prnFiles != null ? prnFiles : new File[0]){
             if(prnFile.getName().contains(".prn") || prnFile.getName().contains(".log") || prnFile.getName().contains(".obj")){FileUtils.copyFileToDirectory(prnFile, dirLog, true); }
          }
       }
@@ -128,7 +128,7 @@ public class Utilit {
          messageToUser.out("Utilit_128", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
          messageToUser.errorAlert(SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
       }
-      messageToUser.infoNoTitles(toW1251("Я пошел...") + "\n" + dirLog.getAbsolutePath() + "\n" + new Date(dirLog.lastModified()));
+      messageToUser.info(toUTF("Я пошел...") ,   dirLog.getAbsolutePath() ,  new Date(dirLog.lastModified())+"");
       System.exit(reaSon);
 
    }
@@ -155,7 +155,6 @@ public class Utilit {
       if(LocalTime.now().isBefore(LocalTime.of(12, 0))) s = "Доброе утро!";
       return s;
    }
-
    /**
     * Преобразование в <b>Windows-1251</b>
     *
@@ -172,7 +171,6 @@ public class Utilit {
       }
       return "Can't convert to Windows-1251!";
    }
-
    public String chkServers() {
       String s1 = "";
       try{

@@ -36,24 +36,24 @@ public class ESender implements Runnable {
    /**
     * Отправка запрошенного URL
     *
-    * @param order запрос вида "get:адрес"
+    * @param orderURL запрос вида "get:адрес"
     * @throws MalformedURLException        url
     * @throws UnsupportedEncodingException bytes2url
     */
-   public void sendMe(String order) throws MalformedURLException, UnsupportedEncodingException {
+   public void sendMe(String orderURL) throws MalformedURLException, UnsupportedEncodingException {
       List<String> rctp = new ArrayList<>();
       rctp.add("143500@gmail.com");
       String subj = "YOUR RESPONSE (" + LocalDateTime.now().toString() + ")";
       URL url = null;
       try{
-         url = new URL(order);
+         url = new URL(orderURL);
       }
       catch(MalformedURLException e){
          try{
-            url = new URL("http://" + order);
+            url = new URL("http://" + orderURL);
          }
          catch(MalformedURLException e1){
-            url = new URL("https://" + order);
+            url = new URL("https://" + orderURL);
          }
 
       }
@@ -69,6 +69,5 @@ public class ESender implements Runnable {
       //Ответы, действия
       String usrToString = new String(pageBytes, "UTF-8");
       new EChecker().sendMail(rctp, subj, usrToString);
-
    }
 }
