@@ -1,6 +1,9 @@
 package ru.vachok.pbem.chess.board;
 
 
+import java.util.Map;
+
+
 /**
  * Шахматная доска.
  * <p>
@@ -24,4 +27,6 @@ public interface ChessBoard {
     * Рассчёт следующего хода.
     */
    void calculateNext();
+
+   Map<Character, Integer> currentPos(String figureName, Map<Character, Integer> moveFromTo);
 }

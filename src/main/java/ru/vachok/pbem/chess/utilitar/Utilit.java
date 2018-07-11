@@ -77,26 +77,6 @@ public class Utilit {
       }
       return "Can't convert to UNICODE!";
    }
-   /**
-    * Определяем дальнейшие действия.
-    */
-   public static void whatNextToDo() {
-      Scanner scanner = new Scanner(System.in);
-      String s = scanner.nextLine();
-      messageToUser.infoNoTitles(toUTF("Введите комманду. OR нажмите h, для вызова помощи."));
-      switch(s){
-         case "get":
-            break;
-         case "h":
-            helpMe(SOURCE_CLASS);
-            break;
-         case "exit":
-            exitWitnClean(63);
-            break;
-         default:
-            throw new UnsupportedOperationException(Utilit.toUTF("ЗАПРЕЩАЮ!"));
-      }
-   }
 
    /**
     * Преобразование в <b>UTF-8</b>
@@ -197,5 +177,29 @@ public class Utilit {
          Thread.currentThread().interrupt();
       }
       return s1;
+   }
+
+   /**
+    * Определяем дальнейшие действия.
+    */
+   public static void whatNextToDo() {
+      String s;
+      Scanner scanner = new Scanner(System.in);
+      messageToUser.infoNoTitles(toUTF("Введите комманду. OR нажмите h, для вызова помощи."));
+      while(scanner.hasNext()){
+         s = scanner.nextLine();
+         switch(s){
+            case "get":
+               break;
+            case "h":
+               helpMe(SOURCE_CLASS);
+               break;
+            case "exit":
+               exitWitnClean(63);
+               break;
+            default:
+               throw new UnsupportedOperationException(Utilit.toUTF("ЗАПРЕЩАЮ!"));
+         }
+      }
    }
 }

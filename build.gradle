@@ -6,20 +6,20 @@ plugins {
     id 'war'
 }
 group 'ru.vachok.pbem.chess'
-version('0.32')
+version('0.33')
 mainClassName = group + '.StartMePChess'
 sourceCompatibility = 1.9
 sourceSets {
     main {
         resources {
             srcDirs = ["src/main/java", "src/main/resources"]
-            includes = ["**/*.fxml", "**/*.css", "**/*.properties", "**/*.png", "**/*.html", ".sql", "**/*.jar"]
+            includes = ["**/*.fxml", "**/*.css", "**/*.properties", "**/*.png", "**/*.jpg", "**/*.html", ".sql", "**/*.jar"]
         }
     }
     test {
         resources {
             srcDirs = ["src/test/java", "src/test/resources"]
-            includes = ["**/*.fxml", "**/*.css", "**/*.properties", "**/*.png", "**/*.jar"]
+            includes = ["**/*.fxml", "**/*.css", "**/*.properties", "**/*.png", "**/*.jpg", "**/*.jar"]
         }
     }
 }

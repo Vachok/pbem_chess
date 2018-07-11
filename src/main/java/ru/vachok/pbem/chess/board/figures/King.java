@@ -3,6 +3,8 @@ package ru.vachok.pbem.chess.board.figures;
 
 import ru.vachok.pbem.chess.board.ChessBoard;
 
+import java.util.Map;
+
 
 /**
  * @since 27.06.2018 (7:45)
@@ -15,19 +17,13 @@ public class King implements ChessBoard {
    private static final String SOURCE_CLASS = King.class.getSimpleName();
 
    /**
-    * Цена фигуры
-    */
-   private static final int PRICE_FOR_GAME = 10000;
-
-   /**
-    * {@link #PRICE_FOR_GAME}
+    * {@link FigPrices#PRICE_KING}
     *
-    * @return цена
+    * @return ценность
     */
    static int getPriceForGame() {
-      return PRICE_FOR_GAME;
+      return FigPrices.PRICE_KING;
    }
-
    /**
     * Сделать ход
     */
@@ -50,5 +46,10 @@ public class King implements ChessBoard {
    @Override
    public void calculateNext() {
 
+   }
+
+   @Override
+   public Map<Character, Integer> currentPos(String figureName, Map<Character, Integer> moveFromTo) {
+      return null;
    }
 }

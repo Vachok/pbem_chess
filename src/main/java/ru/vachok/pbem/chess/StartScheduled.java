@@ -214,14 +214,14 @@ public class StartScheduled implements Runnable {
     */
    enum Services {
       EXIT,
-      EMAIL_SERVICES,
+      NEW_CHESS_BOARD,
       E_CHECKER,
       FTP_CHECKER;
 
 
       public static Map<Integer, String> getNames() {
          Map<Integer, String> servicesMap = new HashMap<>();
-         servicesMap.put(EMAIL_SERVICES.ordinal(), EMAIL_SERVICES.name());
+         servicesMap.put(NEW_CHESS_BOARD.ordinal(), NEW_CHESS_BOARD.name());
          servicesMap.put(E_CHECKER.ordinal(), E_CHECKER.name());
          servicesMap.put(FTP_CHECKER.ordinal(), FTP_CHECKER.name());
          return servicesMap;
