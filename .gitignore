@@ -32,7 +32,6 @@ gradlew.bat
 *.prn
 *.log
 /logs/
-/regpass
 SimpleEmailBinchessMail.properties
 Test Results - StartMePChessTest.html
 *.obj
@@ -58,3 +57,19 @@ ESenderTest.properties
 !/src/test/resources/Email-Work-Suite.xml
 src/main/webapp/
 tasks.txt
+db.txt
+dinner.ini
+/eat.ini
+"\320\264\320\265\320\275\321\214.ini"
+.vertx/
+StartMePChessTest.properties
+VrtClientJDBC.properties
+mail/
+ESender.properties
+/regpass
+FTPCon1.properties
+FTPCon.properties
+/FTPConTest.properties
+/FTPPeriodicCheckerTest.properties
+DBFileProp.properties
+FTPPeriodicChecker.properties

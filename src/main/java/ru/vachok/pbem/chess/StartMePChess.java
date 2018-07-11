@@ -3,19 +3,14 @@ package ru.vachok.pbem.chess;
 
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.pbem.chess.emails.EChecker;
-import ru.vachok.pbem.chess.emails.ESender;
-import ru.vachok.pbem.chess.emails.MailWorksLocal;
-import ru.vachok.pbem.chess.utilitar.ConstantsFor;
+import ru.vachok.mysqlandprops.DbProperties;
+import ru.vachok.pbem.chess.ftpclient.FTPPeriodicChecker;
 import ru.vachok.pbem.chess.utilitar.Utilit;
+import ru.vachok.pbem.chess.vrtx.VrtClientJDBC;
 
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,15 +32,18 @@ class StartMePChess {
    private static final String SOURCE_CLASS = StartMePChess.class.getSimpleName();
 
    /**
-    * Лист адресатов, если надо отправить.
-    */
-   private static final List<String> RCPT = new ArrayList<>();
-
-   /**
     * Общение с пользователем.
     * {@link MessageToUser}
     */
    private static MessageToUser messageToUser = new MessageCons();
+
+   /**
+    * {@link VrtClientJDBC}
+    */
+   private static VrtClientJDBC vrtClientJDBC = new VrtClientJDBC();
+
+   private static Properties properties = new Properties(new DbProperties(SOURCE_CLASS).getProps());
+
 
    /**
     * <b>Точка входа.</b>
@@ -53,43 +51,48 @@ class StartMePChess {
     * @param args null
     * @see Utilit#checkTime() Utilit#checkTime()Utilit#checkTime()
     */
-   public static void main(String[] args) throws MalformedURLException, UnsupportedEncodingException {
-      ExecutorService executorService = Executors.newSingleThreadExecutor();
-      Object callOBJ = new Object();
-      String helloThere = toUTF(new Utilit().checkTime());
-      messageToUser.info(SOURCE_CLASS, "main ID 16", helloThere);
-      Callable mapA = new EChecker();
-      try{ callOBJ = mapA.call(); }
-      catch(Exception e){
-         messageToUser.out("StartMePChess_61", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
-         messageToUser.errorAlert("StartMePChess", e.getMessage(), Arrays.toString(e.getStackTrace()));
-      }
-      RCPT.add("143500@gmail.com");
-      String s = callOBJ.toString();
-      if(s.toLowerCase().contains("gettome:")){
-         Pattern p = Pattern.compile("chess.vachok.ru"); //STOPHERE
-         Matcher m = p.matcher(s);
-         while(m.find()) s = p.toString();
-         new ESender().sendMe(s);
-      }
-      else{ Utilit.exitWitnClean(ConstantsFor.WARN); }
+   public static void main(String[] args) {
+      noFX();
    }
-  
-   private static void mapMail(Map<String, String> callOBJ) {
-      Map<String, String> call = callOBJ;
-      try{
-         boolean isDone = call!=null && (( Future ) call).isDone();
-         String s = call!=null? call.toString(): null;
-         messageToUser.infoNoTitles(s);
-         if(Objects.requireNonNull(s).toLowerCase().contains("sendtome")){
-            boolean b = new EChecker().sendMail(RCPT, System.currentTimeMillis() + " " + isDone, s);
-            if(b){ messageToUser.errorAlert("Utilit", "exitWitnClean", "0"); }
-         }
-         else{ new MailWorksLocal(call);}
+
+   /**
+    * 1.1 Запуск приложения без GUI {@link #main(String[])}
+    * 1.1.4 {@link #doNext(Integer)}
+    */
+   private static void noFX() {
+      messageToUser.info(SOURCE_CLASS, properties.toString(), toUTF(new Utilit().checkTime()));
+      Scanner scanner = new Scanner(System.in);
+      Integer userAnswer = 0;
+      Map<Integer, String> names = StartScheduled.Services.getNames();
+      messageToUser.infoNoTitles(toUTF("Введите имя сервиса:\n" + names.toString().replaceAll(", ", "\n")));
+      while(scanner.hasNextInt()){
+         userAnswer = scanner.nextInt();
+         doNext(userAnswer);
       }
-      catch(NullPointerException e){
-         messageToUser.out("StartMePChess_61", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
-         messageToUser.errorAlert("StartMePChess", e.getMessage(), Arrays.toString(e.getStackTrace()));
+   }
+
+   /**1.1.4 {@link #noFX()} Запустить основные действия.
+    * @param userAnswer ответ пользователя на вопрос что запускать.
+    * @see StartScheduled
+    */
+   private static void doNext(Integer userAnswer) {
+      if(userAnswer==3){
+         Runnable runnable = new StartScheduled(new FTPPeriodicChecker(), 90);
+         runnable.run();
+      }
+      if(userAnswer==2){
+         Runnable runnable = new StartScheduled();
+         runnable.run();
+      }
+      if(userAnswer==1) throw new TypeNotPresentException(toUTF("EMAIL CHECKER (30.06.2018 (9:55)) by I.Kudryashov"), new Throwable());
+      if(userAnswer==0) System.exit(0);
+      String s = "mailToString";
+      String s1 = vrtClientJDBC.toString();
+      if(s.toLowerCase().contains("moving:")){
+         Pattern p = Pattern.compile("([\\w][\\d])-([\\w][\\d])");
+         Matcher m = p.matcher(s);
+         while(m.find()) s = m.group();
+         messageToUser.confirm(SOURCE_CLASS, "The Move = " + s, "OK? " + s1);
       }
    }
 }

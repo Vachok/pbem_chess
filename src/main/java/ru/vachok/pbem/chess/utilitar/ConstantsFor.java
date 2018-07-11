@@ -34,6 +34,7 @@ public enum ConstantsFor {
     * 1000000 миллисек timeout.
     */
    public static final long TIMEOUT_100000 = 1000000;
+
    /**
     * 1 мегабайт в байтах
     */
@@ -43,6 +44,19 @@ public enum ConstantsFor {
     * Выход с предупреждением
     */
    public static final int WARN = 333;
+
+   /**
+    * Название кодировки
+    */
+   public static final String UTF_8 = "UTF-8";
+
+   public static final int KILOBYTE = 1024 * 1024;
+
+   /**
+    * Кодировка Windows-1251 (CP1251)
+    */
+   public static final String W1251 = "Windows-1251";
+
    private static InetAddress vachokRu;
 
    /**

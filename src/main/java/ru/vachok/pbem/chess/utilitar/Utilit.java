@@ -46,9 +46,19 @@ public class Utilit {
          return inetAddress.isReachable(ConstantsFor.TIMEOUT_1000);
       }
       catch(IOException e){
-         LOGGER.log(WARNING, "java.net.UnknownHostException is" + e.getMessage());
+         Utilit.LOGGER.log(WARNING, "java.net.UnknownHostException is" + e.getMessage());
       }
       throw new NullPointerException("FUCK!");
+   }
+
+   public static String toUTF(byte[] pageBytes) {
+      try{
+         return new String(pageBytes, "UTF-8");
+      }
+      catch(UnsupportedEncodingException e){
+         LOGGER.log(WARNING, "java.io.UnsupportedEncodingException is" + e.getMessage());
+      }
+      return "Unsupported";
    }
 
    /**
@@ -113,10 +123,10 @@ public class Utilit {
    public static void exitWitnClean(int reaSon) {
       File[] prnFiles = new File(".").listFiles();
       File dirLog = new File("logs\\");
-      try{
+      try{if(!dirLog.exists())FileUtils.forceMkdir(dirLog);
          FileUtils.cleanDirectory(dirLog);
-         //noinspection ConstantConditions
-         for(File prnFile : prnFiles){
+
+         for(File prnFile : prnFiles != null ? prnFiles : new File[0]){
             if(prnFile.getName().contains(".prn") || prnFile.getName().contains(".log") || prnFile.getName().contains(".obj")){FileUtils.copyFileToDirectory(prnFile, dirLog, true); }
          }
       }
@@ -127,7 +137,7 @@ public class Utilit {
          messageToUser.out("Utilit_128", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
          messageToUser.errorAlert(SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
       }
-      messageToUser.infoNoTitles(toW1251("Я пошел...") + "\n" + dirLog.getAbsolutePath() + "\n" + new Date(dirLog.lastModified()));
+      messageToUser.info(toUTF("Я пошел...") ,   dirLog.getAbsolutePath() ,  new Date(dirLog.lastModified())+"");
       System.exit(reaSon);
 
    }
@@ -147,7 +157,7 @@ public class Utilit {
     * @return строка в зависимости от времени суток, возвращает разное приветствие.
     */
    public String checkTime() {
-      String s = toUTF("Доброго времени суток");
+      String s = Utilit.toUTF("Доброго времени суток");
       if(LocalTime.now().isAfter(LocalTime.of(12, 0))) s = "Добрый день!";
       if(LocalTime.now().isAfter(LocalTime.of(21, 0))) s = "Добрый вечер!";
       if(LocalTime.now().isBefore(LocalTime.of(9, 0))) s = "Доброй ночи!";
@@ -182,34 +192,10 @@ public class Utilit {
          s1 = s1 + inetAddressCHK.isReachable(ConstantsFor.TIMEOUT_1000);
       }
       catch(IOException e){
-         messageToUser.out("Utilit_172", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
-         messageToUser.errorAlert("Utilit", e.getMessage(), Arrays.toString(e.getStackTrace()));
+         Utilit.messageToUser.out("Utilit_172", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
+         Utilit.messageToUser.errorAlert("Utilit", e.getMessage(), Arrays.toString(e.getStackTrace()));
          Thread.currentThread().interrupt();
       }
       return s1;
-   }
-
-   /**
-    * Определяем дальнейшие действия.
-    */
-   public static void whatNextToDo() {
-      String s;
-      Scanner scanner = new Scanner(System.in);
-      messageToUser.infoNoTitles(toUTF("Введите комманду. OR нажмите h, для вызова помощи."));
-      while(scanner.hasNext()){
-         s = scanner.nextLine();
-         switch(s){
-            case "get":
-               break;
-            case "h":
-               helpMe(SOURCE_CLASS);
-               break;
-            case "exit":
-               exitWitnClean(63);
-               break;
-            default:
-               throw new UnsupportedOperationException(Utilit.toUTF("ЗАПРЕЩАЮ!"));
-         }
-      }
    }
 }
