@@ -1,0 +1,68 @@
+"main@1" prio=5 tid=0x1 nid=NA runnable
+  java.lang.Thread.State: RUNNABLE
+	  at java.net.DualStackPlainSocketImpl.accept0(DualStackPlainSocketImpl.java:-1)
+	  at java.net.DualStackPlainSocketImpl.socketAccept(DualStackPlainSocketImpl.java:131)
+	  at java.net.AbstractPlainSocketImpl.accept(AbstractPlainSocketImpl.java:459)
+	  at java.net.PlainSocketImpl.accept(PlainSocketImpl.java:183)
+	  - locked <0x75a> (a java.net.SocksSocketImpl)
+	  at java.net.ServerSocket.implAccept(ServerSocket.java:551)
+	  at java.net.ServerSocket.accept(ServerSocket.java:519)
+	  at ru.vachok.messenger.TNetServer.telnetControl(TNetServer.java:43)
+	  at ru.vachok.messenger.TNetServer.<init>(TNetServer.java:22)
+	  at ru.vachok.messenger.MessageTelnet.run(MessageTelnet.java:126)
+	  at ru.vachok.messenger.MessageTelnet.errorAlert(MessageTelnet.java:42)
+	  at ru.vachok.pbem.chess.StartScheduled.futureStart(StartScheduled.java:113)
+	  at ru.vachok.pbem.chess.StartScheduled.run(StartScheduled.java:93)
+	  at ru.vachok.pbem.chess.StartMePChess.doNext(StartMePChess.java:75)
+	  at ru.vachok.pbem.chess.StartMePChess.noFX(StartMePChess.java:69)
+	  at ru.vachok.pbem.chess.StartMePChess.main(StartMePChess.java:54)
+
+"pool-1-thread-1@1674" prio=5 tid=0x12 nid=NA waiting
+  java.lang.Thread.State: WAITING
+	  at jdk.internal.misc.Unsafe.park(Unsafe.java:-1)
+	  at java.util.concurrent.locks.LockSupport.park(LockSupport.java:194)
+	  at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2075)
+	  at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:1170)
+	  at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:899)
+	  at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1061)
+	  at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1121)
+	  at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	  at java.lang.Thread.run(Thread.java:844)
+
+"Abandoned connection cleanup thread@1069" daemon prio=5 tid=0x11 nid=NA waiting
+  java.lang.Thread.State: WAITING
+	  at java.lang.Object.wait(Object.java:-1)
+	  at java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:151)
+	  at com.mysql.jdbc.AbandonedConnectionCleanupThread.run(AbandonedConnectionCleanupThread.java:64)
+	  at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1135)
+	  at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	  at java.lang.Thread.run(Thread.java:844)
+
+"Common-Cleaner@479" daemon prio=8 tid=0xe nid=NA waiting
+  java.lang.Thread.State: WAITING
+	  at java.lang.Object.wait(Object.java:-1)
+	  at java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:151)
+	  at jdk.internal.ref.CleanerImpl.run(CleanerImpl.java:148)
+	  at java.lang.Thread.run(Thread.java:844)
+	  at jdk.internal.misc.InnocuousThread.run(InnocuousThread.java:134)
+
+"Reference Handler@1877" daemon prio=10 tid=0x2 nid=NA runnable
+  java.lang.Thread.State: RUNNABLE
+	  at java.lang.ref.Reference.waitForReferencePendingList(Reference.java:-1)
+	  at java.lang.ref.Reference.processPendingReferences(Reference.java:174)
+	  at java.lang.ref.Reference.access$000(Reference.java:44)
+	  at java.lang.ref.Reference$ReferenceHandler.run(Reference.java:138)
+
+"Finalizer@1878" daemon prio=8 tid=0x3 nid=NA waiting
+  java.lang.Thread.State: WAITING
+	  at java.lang.Object.wait(Object.java:-1)
+	  at java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:151)
+	  at java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:172)
+	  at java.lang.ref.Finalizer$FinalizerThread.run(Finalizer.java:216)
+
+"Signal Dispatcher@1879" daemon prio=9 tid=0x4 nid=NA runnable
+  java.lang.Thread.State: RUNNABLE
+
+"Attach Listener@1880" daemon prio=5 tid=0x5 nid=NA runnable
+  java.lang.Thread.State: RUNNABLE
+
