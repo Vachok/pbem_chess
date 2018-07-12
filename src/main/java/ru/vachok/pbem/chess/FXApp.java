@@ -2,6 +2,7 @@ package ru.vachok.pbem.chess;
 
 
 import javafx.application.Application;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -12,21 +13,20 @@ import javafx.stage.Stage;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageFX;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.pbem.chess.board.figures.VisualBoardFX;
 import ru.vachok.pbem.chess.fx.ControllerFXApp;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Arrays;
-import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
 import static javafx.application.Platform.exit;
 import static ru.vachok.pbem.chess.utilitar.Utilit.toUTF;
 
 
-/**FX Applicanion start.
+/**
+ * FX Applicanion start.
  * Запуск с аргуметнтом -nofx запустит консольную версию.
+ *
  * @since 30.06.2018 (9:30)
  */
 public class FXApp extends Application {
@@ -44,14 +44,15 @@ public class FXApp extends Application {
    private static MessageToUser staticMess = new MessageCons();
 
    /**
-    * Класс - консольная версия.
-    */
-   private static StartMePChess startMePChess = new StartMePChess();
-
-   /**
     * Графические сообщения
     */
    private MessageToUser messageToUser = new MessageFX();
+
+   public Stage getPrimStage() {
+      return primStage;
+   }
+
+   private static Stage primStage;
 
    @FXML
    private TextArea textF;
@@ -76,17 +77,19 @@ public class FXApp extends Application {
             if(s.contains("1")) StartMePChess.doNext(1);
             if(s.contains("2")) StartMePChess.doNext(2);
             if(s.contains("3")){ StartMePChess.doNext(3); }
-            else{ if(s.contains("nofx")) StartMePChess.noFX(); }
+            else{ StartMePChess.noFX(); }
 
          }
       }
    }
 
-   /** Старт главного экрана.
+   /**
+    * Старт главного экрана.
     * ru/vachok/pbem/chess/FXApp.fxml - FXML.
     * Так-же устанавливает действие при закрытии фрейма.
-    * @see #setExit(Stage)
+    *
     * @param primaryStage {@link Stage}
+    * @see #setExit(Stage)
     */
    @Override
    public void start(Stage primaryStage) {
@@ -103,14 +106,17 @@ public class FXApp extends Application {
       }
       primaryStage.show();
       FXApp.setExit(primaryStage);
+
    }
 
-   /**Установка действий при закрытии фрейма.
+   /**
+    * Установка действий при закрытии фрейма.
     * Запуск {@link ControllerFXApp}
     *
     * @param primaryStage {@link #start(Stage)}
     */
    private static void setExit(Stage primaryStage) {
+      primStage = primaryStage;
       primaryStage.setOnCloseRequest(event -> {
          primaryStage.setAlwaysOnTop(false);
          primaryStage.setOpacity(0.5);
@@ -129,18 +135,28 @@ public class FXApp extends Application {
     */
    @FXML
    private void newPartyAction(ActionEvent actionEvent) {
-      FXApp.startMePChess = new StartMePChess();
-      Runnable oneNewParty = FXApp.startMePChess.getOneNewParty();
-      oneNewParty.run();
-      InputStream inputStream = System.in;
-      OutputStream outputStream = null;
+      Task startMePChess = new StartMePChess(1);
       try{
-         inputStream.transferTo(outputStream);
+         (( StartMePChess ) startMePChess).call();
       }
-      catch(IOException e){
+      catch(Exception e){
          messageToUser.errorAlert(SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
       }
-      Scanner scanner = new Scanner(outputStream.toString());
-      textF.appendText(scanner.nextLine());
+      double progress = startMePChess.getProgress();
+      textF.appendText("Progress :" + "\n" + progress);
+   }
+
+   /**
+    * Показать шахматную доску.
+    *
+    * @param actionEvent menu click
+    */
+   @FXML
+   private void showBoard(ActionEvent actionEvent) {
+      VisualBoardFX visualBoardFX = new VisualBoardFX(new Stage());
+      primStage.setOpacity(0.1);
+      primStage.toBack();
+      visualBoardFX.run();
+
    }
 }

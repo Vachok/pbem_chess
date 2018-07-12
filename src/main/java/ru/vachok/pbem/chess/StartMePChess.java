@@ -1,6 +1,7 @@
 package ru.vachok.pbem.chess;
 
 
+import javafx.concurrent.Task;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.DBFileProp;
@@ -27,7 +28,7 @@ import static ru.vachok.pbem.chess.utilitar.Utilit.toUTF;
  *
  * @since 19.06.2018 (21:29)
  */
-public class StartMePChess {
+public class StartMePChess extends Task<Class<Void>> {
 
    /**
     * Class Simple Name
@@ -49,6 +50,20 @@ public class StartMePChess {
     * {@link VrtClientJDBC}
     */
    private static VrtClientJDBC vrtClientJDBC = new VrtClientJDBC();
+
+   private Integer userAnswer;
+
+   public StartMePChess(Integer userAnswer) {
+      this.userAnswer = userAnswer;
+   }
+
+   private StartMePChess() {
+   }
+
+   @Override
+   public void run() {
+
+   }
 
    /**
     * Запуск новой партии. Создание таблицы в БД, присвоение ID {@link System#currentTimeMillis()} ,
@@ -76,6 +91,12 @@ public class StartMePChess {
          StartMePChess.messageToUser.errorAlert(StartMePChess.SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
       }
    };
+
+   @Override
+   protected Class<Void> call() {
+      doNext(userAnswer);
+      return Void.TYPE;
+   }
 
    /**
     * Консольная версия приложения.
