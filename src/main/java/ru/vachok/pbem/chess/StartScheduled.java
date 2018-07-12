@@ -121,7 +121,7 @@ public class StartScheduled implements Runnable {
     * @see TimerClass
     */
    private void checkPeriodically() {
-      ScheduledFuture schedule = StartScheduled.SCHEDULED_EXECUTOR_SERVICE.scheduleWithFixedDelay(new EChecker(), initial, period, TimeUnit.SECONDS);
+      ScheduledFuture schedule = StartScheduled.SCHEDULED_EXECUTOR_SERVICE.scheduleWithFixedDelay(new EChecker(""), initial, period, TimeUnit.SECONDS);
       ScheduledFuture count = StartScheduled.SCHEDULED_EXECUTOR_SERVICE.scheduleWithFixedDelay(counter, initial, period, TimeUnit.SECONDS);
       try{
          count.get();

@@ -3,6 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.Group?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
 <Group xmlns:fx="http://javafx.com/fxml/1" id="root" xmlns="http://javafx.com/javafx/8"
        fx:controller="ru.vachok.pbem.chess.FXApp">
     <children>
@@ -30,6 +31,13 @@
                         </Menu>
                     </menus>
                 </MenuBar>
+                <TextArea id="textF" fx:id="textF" editable="false" layoutX="200.0" layoutY="25.0" prefHeight="375.0"
+                          prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                          AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="25.0">
+                    <font>
+                        <Font name="Ebrima" size="11.0"/>
+                    </font>
+                </TextArea>
             </children>
         </AnchorPane>
     </children>

@@ -7,13 +7,18 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.control.TextArea;
 import javafx.stage.Stage;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageFX;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.pbem.chess.fx.ControllerFXApp;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
 import static javafx.application.Platform.exit;
@@ -47,6 +52,9 @@ public class FXApp extends Application {
     * Графические сообщения
     */
    private MessageToUser messageToUser = new MessageFX();
+
+   @FXML
+   private TextArea textF;
 
    /**
     * 1. Запуск 1.1-1.4 в зависимости от полученного аргумента.
@@ -124,5 +132,15 @@ public class FXApp extends Application {
       FXApp.startMePChess = new StartMePChess();
       Runnable oneNewParty = FXApp.startMePChess.getOneNewParty();
       oneNewParty.run();
+      InputStream inputStream = System.in;
+      OutputStream outputStream = null;
+      try{
+         inputStream.transferTo(outputStream);
+      }
+      catch(IOException e){
+         messageToUser.errorAlert(SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
+      }
+      Scanner scanner = new Scanner(outputStream.toString());
+      textF.appendText(scanner.nextLine());
    }
 }

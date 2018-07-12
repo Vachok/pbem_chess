@@ -129,13 +129,9 @@ public class FTPPeriodicChecker implements FtpConnect, Runnable {
       if(lo!=0) eSend(messageToSend(sizeAll, lo));
    }
 
-   /**
-    * 1. //todo 12.07.2018 (16:15)
-    *
-    * @param ftpFile
-    */
    private static void dnLoader(FTPFile ftpFile) {
-      throw new UnsupportedOperationException("12.07.2018 (16:15) ");
+      messageToUser.info(ftpFile.getName(), ftpFile.getGroup(), ftpFile.getLink());
+      messageToUser.info(ftpFile.getUser(), ftpFile.getSize() + " size", new Date(ftpFile.getTimestamp().getTimeInMillis()).toString());
    }
 
    /**

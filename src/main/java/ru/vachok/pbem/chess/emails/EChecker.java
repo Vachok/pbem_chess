@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,7 +33,7 @@ import java.util.regex.Pattern;
  * @see EMailsChess
  * @since 20.06.2018 (11:43)
  */
-public class EChecker implements Callable, Runnable {
+public class EChecker implements Runnable, Callable<Map<String, String>> {
 
     /**
      * Simple Name класса, для поиска настроек
@@ -47,18 +48,31 @@ public class EChecker implements Callable, Runnable {
 
     private Map<String, String> mailS = new ConcurrentHashMap<>();
 
+   private String subj;
+
+   public EChecker(String subj) {
+      this.subj = subj;
+   }
+
     @Override
-    public Object call() {
+    public Map<String, String> call() {
         Map<String, String> cM = letParty();
         String s = cM.toString();
         EChecker.messageToUser.infoNoTitles(Utilit.toUTF(s));
-        if(s.toLowerCase().contains("gettome:")){
+       if(subj.toLowerCase().contains("gettome:")){
             Pattern p = Pattern.compile("^(gettome:).*[,]");
             Matcher m = p.matcher(s);
             while(m.find()) s = p.toString();
             EChecker.messageToUser.info(EChecker.SOURCE_CLASS, Utilit.toUTF("Строка для передачи в парсер:\n"), s + "\n");
             this.mailS = letParty();
         }
+
+       if(subj.toLowerCase().contains("play")){
+          BiConsumer<String, String> biConsumer = (x, y) -> {
+             messageToUser.info(SOURCE_CLASS, x, y);
+          };
+          cM.forEach(biConsumer);
+       }
         return mailS;
     }
 
@@ -117,8 +131,7 @@ public class EChecker implements Callable, Runnable {
         Map<String, String> map = letParty();
         String s = map.keySet().toString();
         if(s.toLowerCase().contains("gettome:")) getUrlAddress(s);
-        System.out.println("EChecker.run");
-        System.out.println("keyset = " + s);
+       if(subj.toLowerCase().contains("play")) messageToUser.infoNoTitles(map.toString());
 
     }
 
