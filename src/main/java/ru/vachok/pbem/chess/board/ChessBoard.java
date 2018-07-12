@@ -14,19 +14,19 @@ import java.util.Map;
 public interface ChessBoard {
 
    /**
-    * Сделать ход
+    * ID текущей партии
     */
-   void makeMove();
+   void setPartyID(long partyID);
 
    /**
-    * "Съесть"
+    * @return текущее положение на доске.
     */
-   void takeFigure();
+   Map<Integer, String> currentBoardPositions();
 
    /**
-    * Рассчёт следующего хода.
+    @param c координата буквенная
+    @param i координата цифровая
+     * @return ID ячейки
     */
-   void calculateNext();
-
-   Map<Character, Integer> currentPos(String figureName, Map<Character, Integer> moveFromTo);
+   int getCellID(Character c, Integer i);
 }

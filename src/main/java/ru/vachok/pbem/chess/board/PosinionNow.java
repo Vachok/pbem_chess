@@ -25,7 +25,10 @@ public class PosinionNow implements Callable<Map<Integer, String>> {
 
     private static final DataConnectTo DATA_CONNECT_TO = new RegRuMysql();
 
-    public static PosinionNow getInstance() {
+    private static long partyID;
+
+    public static PosinionNow getInstance(long partyID) {
+        PosinionNow.partyID = partyID;
         return ourInstance;
     }
 
@@ -35,7 +38,7 @@ public class PosinionNow implements Callable<Map<Integer, String>> {
 
     public void moveFig (String figMove){
         String[] mvFromTo =figMove.split("-");
-        messageToUser.info("Moving. From - To: ", mvFromTo[0], mvFromTo[1]);
+        PosinionNow.messageToUser.info("Moving. From - To: ", mvFromTo[0], mvFromTo[1]);
 
     }
 
@@ -43,7 +46,7 @@ public class PosinionNow implements Callable<Map<Integer, String>> {
     public Map<Integer, String> call() {
         Map<Integer, String> bMap = new HashMap<>();
         String sql = "select * from chessboard";
-        try(Connection c = DATA_CONNECT_TO.getDataSource().getConnection();
+        try(Connection c = PosinionNow.DATA_CONNECT_TO.getDataSource().getConnection();
             PreparedStatement p = c.prepareStatement(sql);
             ResultSet r = p.executeQuery()){
             while(r.next()){
@@ -52,7 +55,7 @@ public class PosinionNow implements Callable<Map<Integer, String>> {
                 bMap.put(idchessboard, state);
             }
         }
-        catch(SQLException e){messageToUser.errorAlert(SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));}
+        catch(SQLException e){PosinionNow.messageToUser.errorAlert(PosinionNow.SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));}
         return bMap;
     }
 }

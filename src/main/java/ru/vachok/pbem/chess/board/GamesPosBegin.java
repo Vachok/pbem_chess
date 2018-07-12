@@ -6,7 +6,7 @@ import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
-import ru.vachok.pbem.chess.board.figures.FigPrices;
+import ru.vachok.pbem.chess.board.figures.FigNamePrice;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -17,6 +17,9 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static ru.vachok.pbem.chess.board.figures.FigNamePrice.getKing;
+import static ru.vachok.pbem.chess.board.figures.FigNamePrice.getQueen;
 
 
 /**
@@ -43,9 +46,19 @@ public class GamesPosBegin implements Runnable {
     */
    private static DataConnectTo dataConnectTo = new RegRuMysql();
 
+   private static long partyID = System.currentTimeMillis();
+
+   private GamesPosBegin() {
+   }
+
+   public static GamesPosBegin getInst() {
+      return new GamesPosBegin();
+   }
+
    @Override
    public void run() {
-      main();
+      FigNamePrice.setPartyID(GamesPosBegin.partyID);
+      GamesPosBegin.main();
    }
 
    private static void main() {
@@ -64,16 +77,19 @@ public class GamesPosBegin implements Runnable {
       }
       MysqlDataSource mysqlDataSource = dataConnectTo.getDataSource();
       mysqlDataSource.setCreateDatabaseIfNotExist(true);
-      String sqlTr = "TRUNCATE chessboard";
-      String sql = "insert into chessboard (cellChar, cellInt) values (?,?)";
+      String sqlTr = "CREATE TABLE chessboard? (idchessboard int(11) NOT NULL AUTO_INCREMENT, cellChar varchar(1) NOT NULL, cellInt int(11) NOT NULL, standing varchar(100) DEFAULT NULL, price int(11) DEFAULT NULL, TimeSets datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, partyID varchar(100) DEFAULT ?, PRIMARY KEY (idchessboard), UNIQUE KEY idx_chessboard_cellChar_cellInt (cellChar,cellInt)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8";
+      String sql = "insert into chessboard? (cellChar, cellInt) values (?,?)";
       try(Connection connection = mysqlDataSource.getConnection();
           PreparedStatement preparedStatementT = connection.prepareStatement(sqlTr);
           PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+         preparedStatementT.setLong(1, partyID);
+         preparedStatementT.setLong(2, partyID);
          preparedStatementT.executeUpdate();
          for(Character c : characterCollection){
             for(Integer i = 1; i < 9; i++){
-               preparedStatement.setString(1, c.toString());
-               preparedStatement.setInt(2, i);
+               preparedStatement.setLong(1, partyID);
+               preparedStatement.setString(2, c.toString());
+               preparedStatement.setInt(3, i);
                preparedStatement.executeUpdate();
             }
          }
@@ -83,43 +99,43 @@ public class GamesPosBegin implements Runnable {
    }
 
    /**
-    * Расставляет белые
+    * Расставляет фигуры
     *
-    * @param color
+    * @param color какого цвета фигуру ставим
     */
    private static void insFig(String color) {
       int inte = 1;
       if(color.equalsIgnoreCase("black")) inte = 8;
       int idCell = boardCellGet("a".charAt(0), inte);
       String figure = color + "-left-rook";
-      boardCellSet(figure, FigPrices.PRICE_ROOK, idCell);
+      boardCellSet(figure, FigNamePrice.PRICE_ROOK, idCell);
       idCell = boardCellGet("b".charAt(0), inte);
       figure = color + "-left-knight";
-      boardCellSet(figure, FigPrices.PRICE_KNIGHT, idCell);
+      boardCellSet(figure, FigNamePrice.PRICE_KNIGHT, idCell);
       idCell = boardCellGet("c".charAt(0), inte);
       figure = color + "-left-bishop";
-      boardCellSet(figure, FigPrices.PRICE_BISHOP, idCell);
+      boardCellSet(figure, FigNamePrice.PRICE_BISHOP, idCell);
       idCell = boardCellGet("d".charAt(0), inte);
-      figure = "king";
-      boardCellSet(figure, FigPrices.PRICE_KING, idCell);
+      figure = getKing(color);
+      boardCellSet(figure, FigNamePrice.PRICE_KING, idCell);
       idCell = boardCellGet("e".charAt(0), inte);
-      figure = "qween";
-      boardCellSet(figure, FigPrices.PRICE_QUEEN, idCell);
+      figure = getQueen(color);
+      boardCellSet(figure, FigNamePrice.PRICE_QUEEN, idCell);
       idCell = boardCellGet("f".charAt(0), inte);
       figure = color + "-right-bishop";
-      boardCellSet(figure, FigPrices.PRICE_BISHOP, idCell);
+      boardCellSet(figure, FigNamePrice.PRICE_BISHOP, idCell);
       idCell = boardCellGet("g".charAt(0), inte);
       figure = color + "-right-knight";
-      boardCellSet(figure, FigPrices.PRICE_KNIGHT, idCell);
+      boardCellSet(figure, FigNamePrice.PRICE_KNIGHT, idCell);
       idCell = boardCellGet("h".charAt(0), inte);
       figure = color + "-right-rook";
-      boardCellSet(figure, FigPrices.PRICE_ROOK, idCell);
+      boardCellSet(figure, FigNamePrice.PRICE_ROOK, idCell);
       for(int i = 0; i < 8; i++){
          int inteP = 2;
          if(color.equalsIgnoreCase("black")) inteP = 7;
          idCell = boardCellGet("abcdefgh".charAt(i), inteP);
          figure = color + "-pawn";
-         boardCellSet(figure, FigPrices.PRICE_PAWN, idCell);
+         boardCellSet(figure, FigNamePrice.PRICE_PAWN, idCell);
       }
    }
 
@@ -130,7 +146,7 @@ public class GamesPosBegin implements Runnable {
     * @param j  адрес клетки int
     */
    public static int boardCellGet(Character cF, Integer j) {
-      String sql = "select * from chessboard";
+      String sql = "select * from chessboard" + partyID;
       int id = 0;
       try(Connection connection = dataConnectTo.getDataSource().getConnection();
           PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -154,12 +170,13 @@ public class GamesPosBegin implements Runnable {
    }
 
    public static void boardCellSet(String figure, int figPrice, int idCell) {
-      String sql = "update chessboard set standing = ?, price = ? where idchessboard = ?";
+      String sql = "update chessboard? set standing = ?, price = ? where idchessboard = ?";
       try(Connection connection = dataConnectTo.getDataSource().getConnection();
           PreparedStatement preparedStatement = connection.prepareStatement(sql)){
-         preparedStatement.setString(1, figure);
-         preparedStatement.setInt(2, figPrice);
-         preparedStatement.setInt(3, idCell);
+         preparedStatement.setLong(1, partyID);
+         preparedStatement.setString(2, figure);
+         preparedStatement.setInt(3, figPrice);
+         preparedStatement.setInt(4, idCell);
          preparedStatement.executeUpdate();
       }
       catch(SQLException e){messageToUser.errorAlert(SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));}

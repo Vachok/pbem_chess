@@ -3,7 +3,8 @@ package ru.vachok.pbem.chess;
 
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.DbProperties;
+import ru.vachok.mysqlandprops.DBFileProp;
+import ru.vachok.mysqlandprops.InitProperties;
 import ru.vachok.pbem.chess.board.GamesPosBegin;
 import ru.vachok.pbem.chess.board.PosinionNow;
 import ru.vachok.pbem.chess.emails.ESender;
@@ -26,13 +27,35 @@ import static ru.vachok.pbem.chess.utilitar.Utilit.toUTF;
  *
  * @since 19.06.2018 (21:29)
  */
-class StartMePChess {
+public class StartMePChess {
 
    /**
     * Class Simple Name
     */
    private static final String SOURCE_CLASS = StartMePChess.class.getSimpleName();
 
+   private static InitProperties initProperties = new DBFileProp(SOURCE_CLASS);
+
+   private Runnable oneNewParty = () -> {
+      long l = System.currentTimeMillis();
+      List<String> rcpt = new ArrayList<>();
+      Runnable runnable = () -> GamesPosBegin.getInst().run();
+      Callable<Map<Integer, String>> positionNow = PosinionNow.getInstance(l);
+      ExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+      executorService.execute(runnable);
+      Future<Map<Integer, String>> mapFuture = executorService.submit(positionNow);
+      try{
+         String s = mapFuture.get().toString();
+         StartMePChess.messageToUser.infoNoTitles(s);
+         rcpt.add("143500@gmail.com");
+         rcpt.add("olga-barchi@yandex.ru");
+         rcpt.add("o.barchuk84@gmail.com");
+         ESender.sendM(rcpt, "Play WITH ME... " + l, s.replaceAll(", ", "\n"));
+      }
+      catch(InterruptedException | ExecutionException e){
+         StartMePChess.messageToUser.errorAlert(StartMePChess.SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
+      }
+   };
    /**
     * Общение с пользователем.
     * {@link MessageToUser}
@@ -44,26 +67,11 @@ class StartMePChess {
     */
    private static VrtClientJDBC vrtClientJDBC = new VrtClientJDBC();
 
-   private static List<String> rcpt = new ArrayList<>();
-
-   private static Properties properties = new Properties(new DbProperties(SOURCE_CLASS).getProps());
-
-
-   /**
-    * <b>Точка входа.</b>
-    *
-    * @param args null
-    * @see Utilit#checkTime() Utilit#checkTime()Utilit#checkTime()
-    */
-   public static void main(String[] args) {
-      noFX();
-   }
-
-   /**
-    * 1.1 Запуск приложения без GUI {@link #main(String[])}
+   /**{@link FXApp}
     * 1.1.4 {@link #doNext(Integer)}
     */
-   private static void noFX() {
+   static void noFX() {
+      Properties properties = initProperties.getProps();
       messageToUser.info(SOURCE_CLASS, properties.toString(), toUTF(new Utilit().checkTime()));
       Scanner scanner = new Scanner(System.in);
       Integer userAnswer = 0;
@@ -75,11 +83,11 @@ class StartMePChess {
       }
    }
 
-   /**1.1.4 {@link #noFX()} Запустить основные действия.
+   /**{@link FXApp}
     * @param userAnswer ответ пользователя на вопрос что запускать.
     * @see StartScheduled
     */
-   private static void doNext(Integer userAnswer) {
+   static void doNext(Integer userAnswer) {
       if(userAnswer==3){
          Runnable runnable = new StartScheduled(new FTPPeriodicChecker(), 90);
          runnable.run();
@@ -89,22 +97,9 @@ class StartMePChess {
          runnable.run();
       }
       if(userAnswer==1){
-         Runnable runnable = new GamesPosBegin();
-         Callable<Map<Integer, String>> posinionNow = PosinionNow.getInstance();
+         Runnable runnable = new StartMePChess().getOneNewParty();
          ExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
          executorService.execute(runnable);
-         Future<Map<Integer, String>> mapFuture = executorService.submit(posinionNow);
-         try{
-            String s = mapFuture.get().toString();
-            messageToUser.infoNoTitles(s);
-            rcpt.add("143500@gmail.com");
-            rcpt.add("olga-barchi@yandex.ru");
-            rcpt.add("o.barchuk84@gmail.com");
-            ESender.sendM(rcpt, "Play WITH ME... " + System.currentTimeMillis(), s.replaceAll(", ", "\n"));
-         }
-         catch(InterruptedException | ExecutionException e){
-            messageToUser.errorAlert(SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
-         }
       }
       if(userAnswer==0) System.exit(0);
       String s = "mailToString";
@@ -115,5 +110,9 @@ class StartMePChess {
          while(m.find()) s = m.group();
          messageToUser.confirm(SOURCE_CLASS, "The Move = " + s, "OK? " + s1);
       }
+   }
+
+   public Runnable getOneNewParty() {
+      return oneNewParty;
    }
 }

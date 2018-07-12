@@ -39,7 +39,7 @@ public class VrtClientJDBC extends AbstractVerticle {
               "context=" + context +
               ", initProperties=" + initProperties +
               ", messageToUser=" + messageToUser +
-              ", SOURCE_CLASS='" + SOURCE_CLASS + '\'' +
+              ", SOURCE_CLASS='" + VrtClientJDBC.SOURCE_CLASS + '\'' +
               ", vertx=" + vertx +
               '}';
     }
@@ -48,7 +48,7 @@ public class VrtClientJDBC extends AbstractVerticle {
         initProperties.getProps();
         Map<String, String> mapA = new ConcurrentHashMap<>();
         SQLClient sqlClient = getSQLClient();
-        String sql = "select * from properties";
+        String sql = "select * from chessboard";
         SQLClient query = sqlClient.query(sql, event -> {
             try {
                 Context orCreateContext = getVertx().getOrCreateContext();

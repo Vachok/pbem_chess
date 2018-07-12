@@ -6,8 +6,8 @@ plugins {
     id 'war'
 }
 group 'ru.vachok.pbem.chess'
-version('0.33')
-mainClassName = group + '.StartMePChess'
+version('0.34')
+mainClassName = group + '.FXApp'
 sourceCompatibility = 1.9
 sourceSets {
     main {
@@ -57,7 +57,7 @@ jar {
     manifest {
         attributes(
                 'Main-Class': mainClassName,
-                'JavaFX-Version': 10,
+                'JavaFX-Version': 9,
                 'Class-Path': configurations.runtime.collect() { 'lib/' + it.name }.join('')
         )
     }
