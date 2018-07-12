@@ -8,7 +8,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 
-/**
+/** //todo 12.07.2018 (15:44)
+
  * @since 26.06.2018 (14:56)
  */
 public class EatMeatDinner implements MyEat {
@@ -26,7 +27,6 @@ public class EatMeatDinner implements MyEat {
     }
 
     private void sendDB(Map<String, Double> npMap) {
-        //todo VERTX 26.06.2018 (17:06)
         sendMail();
     }
 

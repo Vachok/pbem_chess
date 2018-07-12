@@ -1,7 +1,6 @@
 package ru.vachok.pbem.chess;
 
 
-import io.vertx.core.Future;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -15,7 +14,6 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.pbem.chess.fx.ControllerFXApp;
 
 import java.util.Arrays;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static javafx.application.Platform.exit;
@@ -99,8 +97,8 @@ public class FXApp extends Application {
       FXApp.setExit(primaryStage);
    }
 
-   /**
-    * //todo 12.07.2018 (15:19)
+   /**Установка действий при закрытии фрейма.
+    * Запуск {@link ControllerFXApp}
     *
     * @param primaryStage {@link #start(Stage)}
     */
@@ -115,11 +113,16 @@ public class FXApp extends Application {
       new ControllerFXApp().controlFX(primaryStage);
    }
 
+   /**
+    * Стартует новую партию.
+    * {@link StartMePChess#getOneNewParty()}
+    *
+    * @param actionEvent нажатие на пункт меню.
+    */
    @FXML
    private void newPartyAction(ActionEvent actionEvent) {
-      StartMePChess startMePChess = new StartMePChess();
-      Runnable oneNewParty = startMePChess.getOneNewParty();
+      FXApp.startMePChess = new StartMePChess();
+      Runnable oneNewParty = FXApp.startMePChess.getOneNewParty();
       oneNewParty.run();
-      Future<Map<Integer, String>> mapFuture;
    }
 }

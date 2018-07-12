@@ -29,7 +29,8 @@ import java.util.function.Consumer;
 
 /**
  * Курс ЕВРО и Доллара США на сегоня.
- *
+ * //todo 12.07.2018 (15:46)
+
  * @since 04.05.2018 (14:35)
  */
 public class KursToday implements Runnable {
@@ -104,7 +105,7 @@ public class KursToday implements Runnable {
          parseFile();
       }
       catch(Exception e){
-         messageToUser.out("KursToday_103", (Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n") + "\nKursToday.getXmlFile, and ID (lineNum) is 103").getBytes());
+         KursToday.messageToUser.out("KursToday_103", (Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n") + "\nKursToday.getXmlFile, and ID (lineNum) is 103").getBytes());
       }
 
    }
@@ -122,26 +123,26 @@ public class KursToday implements Runnable {
          currencyAll = filteredFile[1];
       }
       catch(IOException e){
-         messageToUser.out("KursToday_119", (Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n") + "\nKursToday.parseFile, and ID (lineNum) is 119").getBytes());
+         KursToday.messageToUser.out("KursToday_119", (Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n") + "\nKursToday.parseFile, and ID (lineNum) is 119").getBytes());
       }
       currencyAll = currencyAll.replaceAll("<td>", "");
       currencyAll = currencyAll.replaceAll("</tr>", "");
       currencyAll = currencyAll.replaceAll("<tr>", "");
       currencyAll = currencyAll.replaceAll("</td>", "");
       String[] usdAndE = currencyAll.split("USD");
-      char[] curDEChars = new char[ARRAY_LEN];
-      try{ usdAndE[1].getChars(0, ARRAY_LEN, curDEChars, 0);}
+      char[] curDEChars = new char[KursToday.ARRAY_LEN];
+      try{ usdAndE[1].getChars(0, KursToday.ARRAY_LEN, curDEChars, 0);}
       catch(ArrayIndexOutOfBoundsException e){
-         messageToUser.errorAlert(SOURCE_CLASS, "parseFile ID 127", Utilit.toUTF("ПРОВЕРЬТЕ ВАШ ДОСТУП К СЕТКЕ!"));
+         KursToday.messageToUser.errorAlert(KursToday.SOURCE_CLASS, "parseFile ID 127", Utilit.toUTF("ПРОВЕРЬТЕ ВАШ ДОСТУП К СЕТКЕ!"));
       }
       Map<Integer, Character> characterConcurrentHashMap = new ConcurrentHashMap<>();
-      for(int i = 0; i < ARRAY_LEN; i++){ characterConcurrentHashMap.put(i, curDEChars[i]); }
+      for(int i = 0; i < KursToday.ARRAY_LEN; i++){ characterConcurrentHashMap.put(i, curDEChars[i]); }
       BiConsumer<Integer, Character> integerCharacterBiConsumer = (x, y) -> {
          try{
             FileUtils.write(fileCurr, y.toString(), ConstantsFor.UTF_8, true);
          }
          catch(IOException e){
-            messageToUser.out("KursToday_135", (Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n") + "\nKursToday.parseFile, and ID (lineNum) is 135").getBytes());
+            KursToday.messageToUser.out("KursToday_135", (Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n") + "\nKursToday.parseFile, and ID (lineNum) is 135").getBytes());
          }
       };
       characterConcurrentHashMap.forEach(integerCharacterBiConsumer);
@@ -161,7 +162,7 @@ public class KursToday implements Runnable {
       List<String> stringList = null;
       try{stringList = FileUtils.readLines(fileCurr, ConstantsFor.UTF_8); }
       catch(IOException e){
-         messageToUser.errorAlert(SOURCE_CLASS, "parsingList ID 144", e.getMessage());
+         KursToday.messageToUser.errorAlert(KursToday.SOURCE_CLASS, "parsingList ID 144", e.getMessage());
       }
       List<Double> xFList = new ArrayList<>();
       Double usdCur;
@@ -173,7 +174,7 @@ public class KursToday implements Runnable {
             if(!d.isNaN() && d!=1.0 && d!=978.0 && d!=356.0){xFList.add(d);}
          }
          catch(NumberFormatException e){
-            messageToUser.out("KursToday_163", (Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n") + "\nKursToday.parsingList, and ID (lineNum) is 163").getBytes());
+            KursToday.messageToUser.out("KursToday_163", (Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n") + "\nKursToday.parsingList, and ID (lineNum) is 163").getBytes());
          }
       };
       for(String s : Objects.requireNonNull(stringList)){
@@ -189,7 +190,7 @@ public class KursToday implements Runnable {
          sendToDataBase(usdCur, euroCur);
       }
       catch(IndexOutOfBoundsException e){
-         messageToUser.out(SOURCE_CLASS, (Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n") + "\nKursToday.parsingList, and ID (lineNum) is 177").getBytes());
+         KursToday.messageToUser.out(KursToday.SOURCE_CLASS, (Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n") + "\nKursToday.parsingList, and ID (lineNum) is 177").getBytes());
       }
    }
 
@@ -214,7 +215,7 @@ public class KursToday implements Runnable {
          preparedStatement.executeUpdate();
       }
       catch(Exception e){
-         messageToUser.errorAlert(SOURCE_CLASS, "sendToDataBase ID 188", e.getMessage());
+         KursToday.messageToUser.errorAlert(KursToday.SOURCE_CLASS, "sendToDataBase ID 188", e.getMessage());
       }
       try{
          sendToProperties(usdCur, euroCur);
@@ -222,7 +223,7 @@ public class KursToday implements Runnable {
          FileUtils.forceDeleteOnExit(fileCurr);
       }
       catch(IOException e){
-         messageToUser.out("KursToday_203", (Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n") + "\nKursToday.sendToDataBase, and ID (lineNum) is 203").getBytes());
+         KursToday.messageToUser.out("KursToday_203", (Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n") + "\nKursToday.sendToDataBase, and ID (lineNum) is 203").getBytes());
       }
    }
 
@@ -233,8 +234,8 @@ public class KursToday implements Runnable {
     * @param euro курс евро
     */
    private void sendToProperties(Double usd, Double euro) {
-      Properties properties = initPropertiesStat.getProps();
-      messageToUser.info(SOURCE_CLASS, "sendToProperties ID 214", properties.toString());
+      Properties properties = KursToday.initPropertiesStat.getProps();
+      KursToday.messageToUser.info(KursToday.SOURCE_CLASS, "sendToProperties ID 214", properties.toString());
       if(properties.isEmpty()) properties = new Properties();
       properties.setProperty("USD", usd.toString());
       properties.setProperty("EURO", euro.toString());
@@ -244,7 +245,7 @@ public class KursToday implements Runnable {
          properties.store(fileOutputStream, s);
       }
       catch(IOException e){
-         messageToUser.out("KursToday_224", (Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n") + "\nKursToday.sendToProperties, and ID (lineNum) is 224").getBytes());
+         KursToday.messageToUser.out("KursToday_224", (Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n") + "\nKursToday.sendToProperties, and ID (lineNum) is 224").getBytes());
       }
 
    }

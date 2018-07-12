@@ -12,7 +12,9 @@ import java.net.URL;
 import java.util.Objects;
 
 
-/**
+/**Парсер сайта <a href="https://istra--mo.sudrf.ru" target=_blank>истринского суда.</a>
+ <p>
+ Скачивает страницу за страницей назначенных и прошедших заседаний, и отправляет в базу, бля удобного поиска.
  * @since 09.07.2018 (10:44)
  */
 public class SiteParse {
@@ -21,8 +23,17 @@ public class SiteParse {
 
    private MessageToUser messageToUser = new MessageCons();
 
+   /**
+    * в данном случае <a href="https://istra--mo.sudrf.ru/modules.php?name=sud_delo&srv_num=1&H_date=%s.%s.2018" target=_blank>URL сайта</a>
+    */
    private URL siteURL;
 
+   /**
+    * Скачивает постранично.
+    *
+    * @param month нужный месяц
+    * @param day   нужный день
+    */
    private void dnldSite(String month, String day) {
       byte[] stringDownloadedBytes = null;
       try{

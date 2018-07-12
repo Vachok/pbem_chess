@@ -8,7 +8,11 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.DbProperties;
 import ru.vachok.mysqlandprops.FileProps;
 import ru.vachok.mysqlandprops.InitProperties;
+import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.pbem.chess.emails.ESender;
+import ru.vachok.pbem.chess.emails.EmailsProviders;
+import ru.vachok.pbem.chess.emails.SimpleEmailREG;
+import ru.vachok.pbem.chess.emails.VachokMailer;
 import ru.vachok.pbem.chess.utilitar.Utilit;
 
 import java.io.File;
@@ -20,6 +24,8 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 
 /**
+ * Периодическая проверка FTP-сервера. Если размер файлов менялся - отправить об этом сообщение.
+ *
  * @since 30.06.2018 (1:19)
  */
 public class FTPPeriodicChecker implements FtpConnect, Runnable {
@@ -29,16 +35,27 @@ public class FTPPeriodicChecker implements FtpConnect, Runnable {
     */
    private static final String SOURCE_CLASS = FTPPeriodicChecker.class.getSimpleName();
 
+   private static MessageToUser messageToUser = new MessageCons();
+
+   /**
+    * {@link FtpConnect#getClient()}
+    */
+   private final FTPClient ftpClient = getClient();
+
    private InitProperties initProperties;
 
    private Properties properties = new Properties();
 
-   private static MessageToUser messageToUser = new MessageCons();
-
+   /**
+    * делает имя папки, исходя из сегодняшней даты.
+    */
    private String eDateSt = dateAsFolderName();
 
-   private final FTPClient ftpClient = getClient();
-
+   /**
+    * Конструктор-инициализатор класса.
+    * Если БД {@link RegRuMysql} в данный момент не доступна,
+    * пытается забрать установки из локального файла. {@code {@link #SOURCE_CLASS}.prorerties}
+    */
    public FTPPeriodicChecker() {
       try{
          if(!new File(FTPPeriodicChecker.SOURCE_CLASS + ".properties").exists()){
@@ -51,20 +68,21 @@ public class FTPPeriodicChecker implements FtpConnect, Runnable {
       }
    }
 
+   /**
+    * Запуск, как {@link Runnable}
+    */
    @Override
-   public void connect() {
-      long sizeAll = 0;
-      for(FTPFile ftpFile : getFTPFiles()){
-         FTPPeriodicChecker.dnLoader(ftpFile);
-         sizeAll += ftpFile.getSize();
-      }
-      sizeAll = sizeAll / 1024 / 1024;
-      long lo = sizeAll - Long.parseLong(properties.getProperty("size2downMeg"));
-      properties.setProperty("size2downMeg", sizeAll + "");
-      FTPPeriodicChecker.messageToUser.info(FTPPeriodicChecker.SOURCE_CLASS, Utilit.toUTF("Всего в мегабайтах, после последней проверки: "), sizeAll + "/(LO: " + lo + ")");
-      if(lo!=0) eSend(messageToSend(sizeAll, lo));
+   public void run() {
+      properties = initProperties.getProps();
+      ScheduledExecutorService scheduledExecutorService = new ScheduledThreadPoolExecutor(2);
+      String s = scheduledExecutorService.toString();
+      connect();
+      properties.setProperty("ftp", s);
    }
 
+   /**
+    * @return массив {@link FTPFile} из рабочей папки {@link #eDateSt}
+    */
    @Override
    public FTPFile[] getFTPFiles() {
 
@@ -91,20 +109,44 @@ public class FTPPeriodicChecker implements FtpConnect, Runnable {
       return ftpFiles(ftpClient, workFolderName);
    }
 
+   /**
+    * 1. Соединение с сервером физически.
+    * 1.1 {@link #dnLoader(FTPFile)}
+    * 1.3 {@link #messageToSend(long, long)}
+    * 1.4 {@link #eSend(String)}
+    */
    @Override
-   public void run() {
-      properties = initProperties.getProps();
-      ScheduledExecutorService scheduledExecutorService = new ScheduledThreadPoolExecutor(2);
-      String s = scheduledExecutorService.toString();
-      connect();
-      properties.setProperty("ftp", s);
+   public void connect() {
+      long sizeAll = 0;
+      for(FTPFile ftpFile : getFTPFiles()){
+         FTPPeriodicChecker.dnLoader(ftpFile);
+         sizeAll += ftpFile.getSize();
+      }
+      sizeAll = sizeAll / 1024 / 1024;
+      long lo = sizeAll - Long.parseLong(properties.getProperty("size2downMeg"));
+      properties.setProperty("size2downMeg", sizeAll + "");
+      FTPPeriodicChecker.messageToUser.info(FTPPeriodicChecker.SOURCE_CLASS, Utilit.toUTF("Всего в мегабайтах, после последней проверки: "), sizeAll + "/(LO: " + lo + ")");
+      if(lo!=0) eSend(messageToSend(sizeAll, lo));
    }
 
+   /**
+    * 1. //todo 12.07.2018 (16:15)
+    *
+    * @param ftpFile
+    */
    private static void dnLoader(FTPFile ftpFile) {
-      messageToUser.info(ftpFile.getName(), ftpFile.getGroup(), ftpFile.getLink());
-      messageToUser.info(ftpFile.getUser(), ftpFile.getSize() + " size", new Date(ftpFile.getTimestamp().getTimeInMillis()).toString());
+      throw new UnsupportedOperationException("12.07.2018 (16:15) ");
    }
 
+   /**
+    * 1.4 Почтовое отправление {@link #connect()}
+    *
+    * @param msg тело письма.
+    * @see ESender
+    * @see VachokMailer
+    * @see EmailsProviders
+    * @see SimpleEmailREG
+    */
    private void eSend(String msg) {
       List<String> rcpt = new ArrayList<>();
       rcpt.add("143500@gmail.com");
@@ -114,22 +156,22 @@ public class FTPPeriodicChecker implements FtpConnect, Runnable {
       new DbProperties(FTPPeriodicChecker.SOURCE_CLASS).setProps(properties);
    }
 
+   /**
+    * 1.3 {@link FTPPeriodicChecker#connect()}
+    *
+    * @param sizeAll размер файлов в байтах
+    * @param difSize разница сейчас-сохраненный в {@link Properties}
+    * @return сообщение чтобы отправить по-почте.
+    */
    private String messageToSend(long sizeAll, long difSize) {
       return FTPPeriodicChecker.SOURCE_CLASS + "\n" + Utilit.toUTF("Всего в мегабайтах, после последней проверки: ") + "\n" + sizeAll + "/(dif: " + difSize + ")" + "\n" + properties.toString();
    }
 
-   private String dateAsFolderName() {
-      Integer year = Calendar.getInstance().get(Calendar.YEAR);
-      Integer month = Calendar.getInstance().get(Calendar.MONTH);
-      month = month + 1;
-      Integer day = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
-      String dateT = year.toString() + "0" + month.toString() + day.toString();
-      if(day < 10 && month < 10) dateT = year.toString() + "0" + month.toString() + "0" + day.toString();
-      if(day >= 10 && month >= 10) dateT = year.toString() + month.toString() + day.toString();
-      if(day < 10 && month >= 10) dateT = year.toString() + month.toString() + "0" + day.toString();
-      return dateT;
-   }
-
+   /**
+    * @param ftpClient      {@link FtpConnect#getClient()}
+    * @param workFolderName {@link #eDateSt}
+    * @return массив {@link FTPFile}
+    */
    private FTPFile[] ftpFiles(FTPClient ftpClient, String workFolderName) {
       FTPFile[] ftpFiles = new FTPFile[0];
       String indexChangeTime = "Getting FTP Status";
@@ -150,6 +192,10 @@ public class FTPPeriodicChecker implements FtpConnect, Runnable {
       return ftpFiles;
    }
 
+   /**
+    * @param indexChangeTime timestamp когда менялся файл index.dat
+    * @return давно или нет производились изменения.
+    */
    private boolean isVeryOld(String indexChangeTime) {
       int hourNow = LocalTime.now().getHour();
       String hourNowString = String.valueOf(LocalTime.now().getHour());
@@ -172,5 +218,22 @@ public class FTPPeriodicChecker implements FtpConnect, Runnable {
       }
       catch(NumberFormatException e){FTPPeriodicChecker.messageToUser.errorAlert("No index.dat", e.getMessage(), "ID 129");}
       return false;
+   }
+
+   /**
+    * {@link #eDateSt}
+    *
+    * @return имя рабочей папки на FTP
+    */
+   private String dateAsFolderName() {
+      Integer year = Calendar.getInstance().get(Calendar.YEAR);
+      Integer month = Calendar.getInstance().get(Calendar.MONTH);
+      month = month + 1;
+      Integer day = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
+      String dateT = year.toString() + "0" + month.toString() + day.toString();
+      if(day < 10 && month < 10) dateT = year.toString() + "0" + month.toString() + "0" + day.toString();
+      if(day >= 10 && month >= 10) dateT = year.toString() + month.toString() + day.toString();
+      if(day < 10 && month >= 10) dateT = year.toString() + month.toString() + "0" + day.toString();
+      return dateT;
    }
 }

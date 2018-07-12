@@ -21,7 +21,7 @@ import static ru.vachok.pbem.chess.utilitar.Utilit.toUTF;
 
 
 /**
- * <b>Стартовый</b>
+ * <b>Стартовый консольный класс</b>
  * <p>
  * <a href="http://chess.vachok.ru/" target=_blank>Gradle SCAN</a>
  *
@@ -34,8 +34,28 @@ public class StartMePChess {
     */
    private static final String SOURCE_CLASS = StartMePChess.class.getSimpleName();
 
+   /**
+    * {@link DBFileProp}
+    */
    private static InitProperties initProperties = new DBFileProp(SOURCE_CLASS);
 
+   /**
+    * Общение с пользователем.
+    * {@link MessageToUser}
+    */
+   private static MessageToUser messageToUser = new MessageCons();
+
+   /**
+    * {@link VrtClientJDBC}
+    */
+   private static VrtClientJDBC vrtClientJDBC = new VrtClientJDBC();
+
+   /**
+    * Запуск новой партии. Создание таблицы в БД, присвоение ID {@link System#currentTimeMillis()} ,
+    * отправка почты.
+    *
+    * @see GamesPosBegin
+    */
    private Runnable oneNewParty = () -> {
       long l = System.currentTimeMillis();
       List<String> rcpt = new ArrayList<>();
@@ -56,19 +76,11 @@ public class StartMePChess {
          StartMePChess.messageToUser.errorAlert(StartMePChess.SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
       }
    };
-   /**
-    * Общение с пользователем.
-    * {@link MessageToUser}
-    */
-   private static MessageToUser messageToUser = new MessageCons();
 
    /**
-    * {@link VrtClientJDBC}
-    */
-   private static VrtClientJDBC vrtClientJDBC = new VrtClientJDBC();
-
-   /**{@link FXApp}
-    * 1.1.4 {@link #doNext(Integer)}
+    * Консольная версия приложения.
+    * Задаёт юзеру вопрос. Запускает
+    * {@link #doNext(Integer)}
     */
    static void noFX() {
       Properties properties = initProperties.getProps();
@@ -83,7 +95,9 @@ public class StartMePChess {
       }
    }
 
-   /**{@link FXApp}
+   /**
+    * Запускает что-либо в зависимости от выбора
+    *
     * @param userAnswer ответ пользователя на вопрос что запускать.
     * @see StartScheduled
     */
@@ -112,7 +126,10 @@ public class StartMePChess {
       }
    }
 
-   public Runnable getOneNewParty() {
+   /**
+    * @return {@link #oneNewParty}
+    */
+   Runnable getOneNewParty() {
       return oneNewParty;
    }
 }

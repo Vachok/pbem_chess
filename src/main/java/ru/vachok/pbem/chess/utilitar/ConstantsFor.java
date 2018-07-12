@@ -50,6 +50,9 @@ public enum ConstantsFor {
     */
    public static final String UTF_8 = "UTF-8";
 
+   /**
+    * 1 килобайт
+    */
    public static final int KILOBYTE = 1024 * 1024;
 
    /**
@@ -99,6 +102,9 @@ public enum ConstantsFor {
             '}';
    }
 
+   /**
+    * @return //todo 12.07.2018 (15:44)
+    */
    public static String help() {
       return Utilit.toUTF("а тут могла выть ваша...");
    }

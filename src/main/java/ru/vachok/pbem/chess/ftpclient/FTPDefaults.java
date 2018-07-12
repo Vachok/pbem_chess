@@ -11,13 +11,28 @@ import ru.vachok.mysqlandprops.DbProperties;
 public enum FTPDefaults {
    FTP_DEFAULTS;
 
+   /**
+    * IP камера в комнате
+    */
    public static final String HOSTNAME = "10.10.111.52";
 
+   /**
+    * Порт {@link #HOSTNAME}
+    */
    public static final int PORT = 50021;
 
+   /**
+    * имя пользователя
+    */
    public static final String USER_NAME = "kudr";
 
+   /**
+    * пароль
+    */
    public static final String DEF_PASSWORD = new DbProperties("pass").getProps().getProperty("defpassbytes");
 
+   /**
+    * Тип передачи.
+    */
    public static final int MY_FILE_TYPE = FTP.BINARY_FILE_TYPE;
 }

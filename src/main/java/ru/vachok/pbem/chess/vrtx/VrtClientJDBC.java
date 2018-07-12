@@ -19,7 +19,8 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 
-/**
+/** //todo 12.07.2018 (15:43)
+
  * @since 27.06.2018 (1:09)
  */
 public class VrtClientJDBC extends AbstractVerticle {
@@ -65,7 +66,7 @@ public class VrtClientJDBC extends AbstractVerticle {
         messageToUser.infoNoTitles(mapA.toString() + "   " + this.context.toString());
     }
 
-    public SQLClient getSQLClient() {
+    private SQLClient getSQLClient() {
         return JDBCClient.createShared(Vertx.vertx(), configJSON());
     }
 
