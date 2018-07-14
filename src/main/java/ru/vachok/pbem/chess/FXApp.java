@@ -3,7 +3,9 @@ package ru.vachok.pbem.chess;
 
 import javafx.application.Application;
 import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Group;
@@ -156,7 +158,6 @@ public class FXApp extends Application {
       });
    }
 
-
    /**
     * Парсит {@link ChessParty#partyID} из {@link DbProperties#getProps()} по-имени {@link GamesPosBegin}
     * Если не смог - пытается взять из {@link FileProps}
@@ -197,29 +198,42 @@ public class FXApp extends Application {
          rcpt.add("143500@gmail.com");
          rcpt.add("olga-barchi@yandex.ru");
          initProperties.setProps(properties);
-         Runnable r = new ESender(rcpt, "Playing party ID " + partyID, call.toString().replaceAll(", ", "\n"));
+         ESender r = new ESender(rcpt, "Playing party ID " + partyID, call.toString().replaceAll(", ", "\n"));
+
          EXECUTOR_SERVICE.execute(r);
       }
       catch(Exception e){
          messageToUser.out("FXApp_155", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", " ")).getBytes());
          messageToUser.errorAlert("FXApp", e.getMessage(), "FXApp.sendFigMoves_155");
       }
-      StartMePChess startMePChess = new StartMePChess(3);
-      textF.appendText(toUTF("Стартует периодическая проверка FTP.\nПока это всЁ"));
-      EXECUTOR_SERVICE.submit(startMePChess);
-      textF.appendText(EXECUTOR_SERVICE.toString());
-      primStage.toBack();
+      Task<Void> voidTask = doTask();
+      EventHandler<WorkerStateEvent> onRunning = voidTask.getOnRunning();
+      EXECUTOR_SERVICE.execute(voidTask);
+      textF.appendText(onRunning.toString());
       ControllerFXApp controllerFXApp = new ControllerFXApp();
       controllerFXApp.controlFX(new Stage());
    }
 
-   @FXML
-   private void sendFigMoves(ActionEvent actionEvent) {
-//todo 14.07.2018 (12:07)
-      throw new UnsupportedOperationException("14.07.2018 (11:47)");
+   private Task<Void> doTask() {
+      Task<Void> theDo = new Task<Void>() {
 
+         @Override
+         protected Void call() {
+            StartMePChess startMePChess = new StartMePChess(3);
+            textF.appendText(toUTF("Стартует периодическая проверка FTP.\nПока это всЁ"));
+            EXECUTOR_SERVICE.submit(startMePChess);
+            textF.appendText(EXECUTOR_SERVICE.toString());
+            return null;
+         }
+      };
+      return theDo;
    }
 
+   @FXML
+   private void sendFigMoves(ActionEvent actionEvent) {
+      //todo 14.07.2018 (12:07)
+      throw new UnsupportedOperationException("14.07.2018 (11:47)");
+   }
 
    /**
     * Создаёт партию с новым ID

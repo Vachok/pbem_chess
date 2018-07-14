@@ -1,6 +1,7 @@
 package ru.vachok.pbem.chess.emails;
 
 
+import javafx.concurrent.Task;
 import org.apache.commons.mail.Email;
 import org.apache.commons.mail.EmailException;
 import ru.vachok.messenger.MessageCons;
@@ -22,20 +23,17 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 
 /**
  * @since 24.06.2018 (10:41)
  */
-public class ESender implements Runnable {
+public class ESender extends Task<Boolean> implements Runnable {
 
     /**
      * Simple Name класса, для поиска настроек
      */
     private static final String SOURCE_CLASS = ESender.class.getSimpleName();
-    private static final ExecutorService EXECUTOR_SENDER = Executors.newSingleThreadExecutor();
     private static MessageToUser messageToUser = new MessageCons();
     private static EmailsProviders p = new VachokMailer();
 
@@ -45,20 +43,47 @@ public class ESender implements Runnable {
 
    private String msg;
 
+   /**
+    * Запрошенный {@link URL}
+    */
    private URL orderURL;
 
+   /**
+    * Конструктор по-умолчанию
+    *
+    * @param rcpt {@link List} строк - адреса получателей
+    * @param subj тема письма
+    * @param msg  тело письма
+    */
    public ESender(List<String> rcpt, String subj, String msg) {
-        this.rcpt = rcpt;
-        this.subj = subj;
-        this.msg = msg;
-    }
+      this.rcpt = rcpt;
+      this.subj = subj;
+      this.msg = msg;
+   }
 
-    /**
-     * Отправка запрошенного URL
-     * //todo 14.07.2018 (3:20)
-     * @param orderURL запрос вида "get:адрес"
-     */
-    public void sendMail(URL orderURL) {
+   /**
+    * Конструктор запроса {@link URL}
+    *
+    * @param rcpt     {@link List} строк - адреса получателей
+    * @param subj     тема письма
+    * @param msg      тело письма
+    * @param orderURL URL, для парсинга
+    */
+   public ESender(List<String> rcpt, String subj, String msg, URL orderURL) {
+      this.rcpt = rcpt;
+      this.subj = subj;
+      this.msg = msg;
+      this.orderURL = orderURL;
+      sendURL(orderURL);
+   }
+
+   /**
+    * {@link #ESender(List, String, String, URL)}
+    * Отправка запрошенного URL
+    *
+    * @param url //todo 14.07.2018 (3:20)
+    */
+   public void sendURL(URL url) {
        subj = "GETTOME (URL4U" + LocalDateTime.now().toString() + ")";
         byte[] pageBytes = new byte[ConstantsFor.MEGABYTE];
        try(InputStream openStreamURL = orderURL.openStream()){
@@ -66,45 +91,55 @@ public class ESender implements Runnable {
         } catch (IOException e) {
           ESender.messageToUser.out("ESender_50", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", " ")).getBytes());
           ESender.messageToUser.errorAlert("ESender", e.getMessage(), Arrays.toString(e.getStackTrace()));
-        }
-
-        //Ответы, действия
-       String usrToString = Utilit.toUTF(pageBytes);
-       this.msg = usrToString;
+       }
+      this.msg = Utilit.toUTF(pageBytes);
        sendMail();
-    }
+   }
 
-    /**
+   /**
      * Отправка сообщения электронной почты.
-     *
-     * @return true = ok.
-     */
-    private boolean sendMail() {
-        InitProperties initPr = new DbProperties("mailP");
-        Properties mailP = initPr.getProps();
-        Authenticator authenticator = new VachokMailer.AuthForChess();
-        ((VachokMailer.AuthForChess) authenticator).getPasswordAuthentication();
-        Session session = Session.getInstance(mailP, authenticator);
-        Properties cur = session.getProperties();
-       initPr = new FileProps(ESender.SOURCE_CLASS);
-        initPr.setProps(cur);
-       Provider regRu = ESender.p.chessMail();
-        Email simpleEmail = new SimpleEmailREG(rcpt, subj, msg).getMailBin();
-        try {
-            session.setProvider(regRu);
-        } catch (NoSuchProviderException e) {
-           ESender.messageToUser.out("EChecker_114", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
-           ESender.messageToUser.errorAlert(ESender.SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
-        }
-        try {
-            simpleEmail.send();
-        } catch (EmailException e) {
-           ESender.messageToUser.out("EChecker_149", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
-           ESender.messageToUser.errorAlert("EChecker", e.getMessage(), Arrays.toString(e.getStackTrace()));
-            return false;
-        }
-        return true;
-    }
+    *
+    * @return true = ok.
+    * @see VachokMailer#chessMail()
+    */
+   private boolean sendMail() {
+      InitProperties initPr = new DbProperties("mailP");
+      Properties mailP = initPr.getProps();
+      Authenticator authenticator = new VachokMailer.AuthForChess();
+      (( VachokMailer.AuthForChess ) authenticator).getPasswordAuthentication();
+      Session session = Session.getInstance(mailP, authenticator);
+      Properties cur = session.getProperties();
+      initPr = new FileProps(ESender.SOURCE_CLASS);
+      initPr.setProps(cur);
+      Provider regRu = ESender.p.chessMail();
+      Email simpleEmail = new SimpleEmailREG(rcpt, subj, msg).getMailBin();
+      try{
+         session.setProvider(regRu);
+      }
+      catch(NoSuchProviderException e){
+         ESender.messageToUser.out("EChecker_114", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
+         ESender.messageToUser.errorAlert(ESender.SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
+      }
+      try{
+         simpleEmail.send();
+      }
+      catch(EmailException e){
+         ESender.messageToUser.out("EChecker_149", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
+         ESender.messageToUser.errorAlert("EChecker", e.getMessage(), Arrays.toString(e.getStackTrace()));
+         return false;
+      }
+      return true;
+   }
+
+   /**
+    * {@link #ESender(List, String, String)}
+    *
+    * @return true = отправлено
+    */
+   @Override
+   protected Boolean call() {
+      return sendMail();
+   }
 
     @Override
     public void run() {

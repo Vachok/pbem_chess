@@ -8,6 +8,7 @@ import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.DbProperties;
 import ru.vachok.mysqlandprops.InitProperties;
 import ru.vachok.mysqlandprops.RegRuMysql;
+import ru.vachok.pbem.chess.utilitar.ConstantsFor;
 import ru.vachok.pbem.chess.utilitar.Utilit;
 
 import javax.mail.*;
@@ -35,18 +36,18 @@ import java.util.regex.Pattern;
  */
 public class EChecker implements Runnable, Callable<Map<String, String>> {
 
-    /**
-     * Simple Name класса, для поиска настроек
-     */
-    private static final String SOURCE_CLASS = EChecker.class.getSimpleName();
+   /**
+    * Simple Name класса, для поиска настроек
+    */
+   private static final String SOURCE_CLASS = EChecker.class.getSimpleName();
 
-    private static MessageToUser messageToUser = new MessageCons();
+   private static MessageToUser messageToUser = new MessageCons();
 
-    private static DataConnectTo dataConnectTo = new RegRuMysql();
+   private static DataConnectTo dataConnectTo = new RegRuMysql();
 
-    private static List<String> rcpt = new ArrayList<>();
+   private static List<String> rcpt = new ArrayList<>();
 
-    private Map<String, String> mailS = new ConcurrentHashMap<>();
+   private Map<String, String> mailS = new ConcurrentHashMap<>();
 
    private String subj;
 
@@ -54,123 +55,130 @@ public class EChecker implements Runnable, Callable<Map<String, String>> {
       this.subj = subj;
    }
 
-    @Override
-    public Map<String, String> call() {
-        Map<String, String> cM = letParty();
-        String s = cM.toString();
-        EChecker.messageToUser.infoNoTitles(Utilit.toUTF(s));
-       if(subj.toLowerCase().contains("gettome:")){
-            Pattern p = Pattern.compile("^(gettome:).*[,]");
-            Matcher m = p.matcher(s);
-            while(m.find()) s = p.toString();
-            EChecker.messageToUser.info(EChecker.SOURCE_CLASS, Utilit.toUTF("Строка для передачи в парсер:\n"), s + "\n");
-            this.mailS = letParty();
-        }
+   @Override
+   public Map<String, String> call() {
+      Map<String, String> cM = getPOP3MessagesMap();
+      String s = cM.toString();
+      EChecker.messageToUser.infoNoTitles(Utilit.toUTF(s));
+      if(subj.toLowerCase().contains(ConstantsFor.GETTOME)){
+         Pattern p = Pattern.compile("^(gettome:).*[,]");
+         Matcher m = p.matcher(s);
+         while(m.find()) s = p.toString();
+         EChecker.messageToUser.info(EChecker.SOURCE_CLASS, Utilit.toUTF("Строка для передачи в парсер:\n"), s + "\n");
+         this.mailS = getPOP3MessagesMap();
+      }
 
-       if(subj.toLowerCase().contains("play")){
-          BiConsumer<String, String> biConsumer = (x, y) -> {
-             messageToUser.info(SOURCE_CLASS, x, y);
-          };
-          cM.forEach(biConsumer);
-       }
-        return mailS;
-    }
+      if(subj.toLowerCase().contains("play")){
+         BiConsumer<String, String> biConsumer = (x, y) -> messageToUser.info(SOURCE_CLASS, x, y);
+         cM.forEach(biConsumer);
+      }
+      return mailS;
+   }
 
-   //todo 14.07.2018 (3:20)
-
-    private Map<String, String> letParty() {
-        InitProperties initProperties = new DbProperties("mailP");
-        Properties mailP = initProperties.getProps();
-        Properties authP = new DbProperties("SimpleEmailBinchess").getProps();
-        Session chkSess = Session.getDefaultInstance(mailP);
-        String host = mailP.getProperty("host");
-        String user = authP.getProperty("userName");
-        String password = authP.getProperty("pass");
-        mailS = new ConcurrentHashMap<>();
-        try{
-            Store store = chkSess.getStore("pop3s");
-            store.connect(host, user, password);
-            Folder inBox = store.getFolder("Inbox");
-            inBox.open(Folder.READ_ONLY);
-            Message[] mailSMessages = inBox.getMessages();
-
+   /**
+    * {@link #call()} ; {@link #run()}
+    * Получает сообщения из REG
+    *
+    * @return {@link Map} с сообщениями на сервере.
+    */
+   private Map<String, String> getPOP3MessagesMap() {
+      InitProperties initProperties = new DbProperties("mailP");
+      Properties mailP = initProperties.getProps();
+      Properties authP = new DbProperties("SimpleEmailBinchess").getProps();
+      Session chkSess = Session.getDefaultInstance(mailP);
+      String host = mailP.getProperty("host");
+      String user = authP.getProperty("userName");
+      String password = authP.getProperty("pass");
+      mailS = new ConcurrentHashMap<>();
+      try{
+         Store store = chkSess.getStore("pop3s");
+         store.connect(host, user, password);
+         Folder inBox = store.getFolder("Inbox");
+         inBox.open(Folder.READ_ONLY);
+         Message[] mailSMessages = inBox.getMessages();
+         synchronized(mailSMessages) {
             for(Message mailSMessage : mailSMessages){
-                File file = new File("mes\\" + mailSMessage.getMessageNumber() + ".eem");
-                InputStream inputStreamM = mailSMessage.getInputStream();
-                byte[] bytes = inputStreamM.readAllBytes();
-                String msg = LocalDateTime.now() + "\n" + mailSMessage.getSentDate().toString() + "\nFrom STREAM-bytes is: " + bytes.length + "\n" + new String(bytes);
-                String key = "Message number " + mailSMessage.getMessageNumber() + "_" + System.currentTimeMillis() + ".\n\n" + "SUBJECT : " + mailSMessage.getSubject() + ";";
-                mailS.put(key, msg);
-                FileUtils.writeStringToFile(file, key + "\n MESSAGE: " + msg, "UTF-8");
+               File file = new File("mes\\" + mailSMessage.getMessageNumber() + ".eem");
+               InputStream inputStreamM = mailSMessage.getInputStream();
+               byte[] bytes = inputStreamM.readAllBytes();
+               String msg = LocalDateTime.now() + "\n" + mailSMessage.getSentDate().toString() + "\nFrom STREAM-bytes is: " + bytes.length + "\n" + new String(bytes);
+               String key = "Message number " + mailSMessage.getMessageNumber() + "_" + System.currentTimeMillis() + ".\n\n" + "SUBJECT : " + mailSMessage.getSubject() + ";";
+               mailS.put(key, msg);
+               FileUtils.writeStringToFile(file, key + "\n MESSAGE: " + msg, "UTF-8");
+               notifyAll();
             }
-        }
-        catch(IOException | NoSuchElementException | MessagingException e){
-            EChecker.messageToUser.out("EChecker_116", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
-            EChecker.messageToUser.errorAlert("EChecker", e.getMessage(), Arrays.toString(e.getStackTrace()));
-            notifyAll();
-        }
-        notifyAll();
-        return mailS;
-    }
+         }
+      }
+      catch(IOException | NoSuchElementException | MessagingException e){
+         EChecker.messageToUser.out("EChecker_116", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
+         EChecker.messageToUser.errorAlert("EChecker", e.getMessage(), Arrays.toString(e.getStackTrace()));
+      }
+      return mailS;
+   }
 
-    /**
-     * When an object implementing interface <code>Runnable</code> is used
-     * to create a thread, starting the thread causes the object's
-     * <code>run</code> method to be called in that separately executing
-     * thread.
-     * <p>
-     * The general contract of the method <code>run</code> is that it may
-     * take any action whatsoever.
-     *
-     * @see Thread#run()
-     */
-    @Override
-    public void run() {
-        EChecker.rcpt.add("143500@gmail.com");
-        Map<String, String> map = letParty();
-        String s = map.keySet().toString();
-        if(s.toLowerCase().contains("gettome:")) getUrlAddress(s);
-       if(subj.toLowerCase().contains("play")) messageToUser.infoNoTitles(map.toString());
+   /**
+    * When an object implementing interface <code>Runnable</code> is used
+    * to create a thread, starting the thread causes the object'GETTOME
+    * <code>run</code> method to be called in that separately executing
+    * thread.
+    * <p>
+    * The general contract of the method <code>run</code> is that it may
+    * take any action whatsoever.
+    *
+    * @see Thread#run()
+    */
+   @Override
+   public void run() {
+      EChecker.rcpt.add("143500@gmail.com");
+      Map<String, String> map = getPOP3MessagesMap();
+      String s = map.keySet().toString();
+      if(s.toLowerCase().contains(ConstantsFor.GETTOME)) getUrlAddress(s);
+      if(subj.toLowerCase().contains("play")) messageToUser.infoNoTitles(map.toString());
 
-    }
+   }
 
-    private void getUrlAddress(String mesgInString) {
-        String[] sS = mesgInString.split("gettome:");
-        URL url = null;
-        StringBuilder sb = new StringBuilder();
-        char[] chars = sS[1].toCharArray();
-        for(int i = 0; i < 30; i++){
-            Character c = chars[i];
-            int i1 = c.toString().compareTo("/");
-            if(i1!=0) sb.append(chars[i]);
-        }
-        try{
-            url = new URL(sb.toString());
-            try(InputStream inputStream = url.openStream()){
-                byte[] reads = inputStream.readAllBytes();
-                mesgInString = new String(reads, "UTF-8");
-                EChecker.messageToUser.infoNoTitles(mesgInString);
-            }
-        }
-        catch(IOException e){
-            new ESender(EChecker.rcpt, new Date().toString(), e.getMessage() + "\n" + mesgInString);
-            EChecker.messageToUser.out("EChecker_141", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n") + "\nEChecker.run, and ID (lineNum) is 129").getBytes());
-        }
-        new ESender(EChecker.rcpt, new Date().toString(), "" + "\n" + mesgInString).sendMail(url);
-        sendResultToDatabase(mesgInString);
-    }
+   /**
+    * Парсит {@link ConstantsFor#GETTOME} строку.
+    *
+    * @param mesgInString //todo 14.07.2018 (19:32)
+    */
+   private void getUrlAddress(String mesgInString) {
+      String[] sS = mesgInString.split(ConstantsFor.GETTOME);
+      URL url = null;
+      StringBuilder sb = new StringBuilder();
+      char[] chars = sS[1].toCharArray();
+      for(int i = 0; i < 30; i++){
+         Character c = chars[i];
+         int i1 = c.toString().compareTo("/");
+         if(i1!=0) sb.append(chars[i]);
+      }
+      try{
+         url = new URL(sb.toString());
+         try(InputStream inputStream = url.openStream()){
+            byte[] reads = inputStream.readAllBytes();
+            mesgInString = new String(reads, "UTF-8");
+            EChecker.messageToUser.infoNoTitles(mesgInString);
+         }
+      }
+      catch(IOException e){
+         new ESender(EChecker.rcpt, new Date().toString(), e.getMessage() + "\n" + mesgInString);
+         EChecker.messageToUser.out("EChecker_141", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n") + "\nEChecker.run, and ID (lineNum) is 129").getBytes());
+      }
+      new ESender(EChecker.rcpt, new Date().toString(), "" + "\n" + mesgInString).sendURL(url);
+      sendResultToDatabase(mesgInString);
+   }
 
-    private void sendResultToDatabase(String rez) {
-        String sql = "insert into rez (rez, pc) values (?,?)";
-        try(Connection connection = EChecker.dataConnectTo.getDataSource().getConnection();
-            PreparedStatement ps = connection.prepareStatement(sql)){
-            ps.setString(1, rez);
-            ps.setString(2, EChecker.SOURCE_CLASS);
-            ps.executeUpdate();
-        }
-        catch(SQLException e){
-            EChecker.messageToUser.out("EChecker_143", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n") + "\nEChecker.sendResultToDatabase, and ID (lineNum) is 143").getBytes());
-        }
+   private void sendResultToDatabase(String rez) {
+      String sql = "insert into rez (rez, pc) values (?,?)";
+      try(Connection connection = EChecker.dataConnectTo.getDataSource().getConnection();
+          PreparedStatement ps = connection.prepareStatement(sql)){
+         ps.setString(1, rez);
+         ps.setString(2, EChecker.SOURCE_CLASS);
+         ps.executeUpdate();
+      }
+      catch(SQLException e){
+         EChecker.messageToUser.out("EChecker_143", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n") + "\nEChecker.sendResultToDatabase, and ID (lineNum) is 143").getBytes());
+      }
 
-    }
+   }
 }

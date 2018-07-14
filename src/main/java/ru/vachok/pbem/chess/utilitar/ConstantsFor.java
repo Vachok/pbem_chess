@@ -3,9 +3,11 @@ package ru.vachok.pbem.chess.utilitar;
 
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.pbem.chess.emails.EChecker;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.URL;
 import java.util.Arrays;
 
 
@@ -64,6 +66,13 @@ public enum ConstantsFor {
     * Color Figure
     */
    public static final String BLACK = "BLACK";
+
+   /**
+    * Запрос для получения содержимого сайта из {@link URL}
+    *
+    * @see EChecker
+    */
+   public static final String GETTOME = "gettome:";
 
    /**
     * <a href="http://www.vachok.ru" target = _blank>http://www.vachok.ru</a>

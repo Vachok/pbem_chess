@@ -42,8 +42,7 @@ public class ControllerFXApp {
 
    /**
     * Стартует новую партию.
-    * // todo 12.07.2018 (16:00)
-
+    * //todo 14.07.2018 (19:23)
     */
    private void newParty() {
       throw new UnsupportedOperationException("Not ready yet 12.07.2018 (16:00)");
