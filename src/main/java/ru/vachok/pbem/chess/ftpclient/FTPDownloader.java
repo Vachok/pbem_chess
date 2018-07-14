@@ -4,7 +4,7 @@ package ru.vachok.pbem.chess.ftpclient;
 import org.apache.commons.net.ftp.FTPFile;
 
 
-/**
+/** //todo 15.07.2018 (0:07)
  * @since 03.07.2018 (22:57)
  */
 public class FTPDownloader implements Runnable, FtpConnect {
@@ -21,7 +21,6 @@ public class FTPDownloader implements Runnable, FtpConnect {
 
    /**
     * 1. Стартовая точка
-    * //todo 12.07.2018 (16:07)
     */
    @Override
    public void run() {

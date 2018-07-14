@@ -28,12 +28,12 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
  *
  * @since 30.06.2018 (1:19)
  */
-public class FTPPeriodicChecker implements FtpConnect, Runnable {
+public class FtpHomeCamCheck implements FtpConnect, Runnable {
 
    /**
     * Simple Name класса, для поиска настроек
     */
-   private static final String SOURCE_CLASS = FTPPeriodicChecker.class.getSimpleName();
+   private static final String SOURCE_CLASS = FtpHomeCamCheck.class.getSimpleName();
 
    private static MessageToUser messageToUser = new MessageCons();
 
@@ -47,7 +47,8 @@ public class FTPPeriodicChecker implements FtpConnect, Runnable {
    private Properties properties = new Properties();
 
    /**
-    * делает имя папки, исходя из сегодняшней даты.
+    * имя папки, исходя из сегодняшней даты.
+    * {@link #eDateSt}
     */
    private String eDateSt = dateAsFolderName();
 
@@ -56,20 +57,21 @@ public class FTPPeriodicChecker implements FtpConnect, Runnable {
     * Если БД {@link RegRuMysql} в данный момент не доступна,
     * пытается забрать установки из локального файла. {@code {@link #SOURCE_CLASS}.prorerties}
     */
-   public FTPPeriodicChecker() {
+   public FtpHomeCamCheck() {
       try{
-         if(!new File(FTPPeriodicChecker.SOURCE_CLASS + ".properties").exists()){
-            initProperties = new DbProperties(FTPPeriodicChecker.SOURCE_CLASS);
+         if(!new File(FtpHomeCamCheck.SOURCE_CLASS + ".properties").exists()){
+            initProperties = new DbProperties(FtpHomeCamCheck.SOURCE_CLASS);
          }
-         else{ initProperties = new FileProps(FTPPeriodicChecker.SOURCE_CLASS); }
+         else{ initProperties = new FileProps(FtpHomeCamCheck.SOURCE_CLASS); }
       }
       catch(Exception e){
-         FTPPeriodicChecker.messageToUser.errorAlert(FTPPeriodicChecker.SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
+         FtpHomeCamCheck.messageToUser.errorAlert(FtpHomeCamCheck.SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
       }
    }
 
    /**
-    * Запуск, как {@link Runnable}
+    * 1. Запуск, как {@link Runnable}
+    * 1.1 {@link #connect()}
     */
    @Override
    public void run() {
@@ -80,7 +82,7 @@ public class FTPPeriodicChecker implements FtpConnect, Runnable {
       properties.setProperty("ftp", s);
    }
 
-   /**
+   /**{@link #connect()}
     * @return массив {@link FTPFile} из рабочей папки {@link #eDateSt}
     */
    @Override
@@ -94,17 +96,17 @@ public class FTPPeriodicChecker implements FtpConnect, Runnable {
          ftpClient.doCommand("CWD", dateFolderOnServer);
       }
       catch(IOException e){
-         FTPPeriodicChecker.messageToUser.errorAlert(FTPPeriodicChecker.SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
+         FtpHomeCamCheck.messageToUser.errorAlert(FtpHomeCamCheck.SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
       }
       try{
          FTPFile[] dirsOnCamera = ftpClient.listDirectories();
 
          workFolderName = dateFolderOnServer + dirsOnCamera[0].getName() + "/";
       }
-      catch(IOException e){FTPPeriodicChecker.messageToUser.errorAlert(FTPPeriodicChecker.SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));}
+      catch(IOException e){FtpHomeCamCheck.messageToUser.errorAlert(FtpHomeCamCheck.SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));}
       try{ftpClient.doCommand("CWD", workFolderName);}
       catch(IOException e){
-         FTPPeriodicChecker.messageToUser.errorAlert(FTPPeriodicChecker.SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
+         FtpHomeCamCheck.messageToUser.errorAlert(FtpHomeCamCheck.SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
       }
       return ftpFiles(ftpClient, workFolderName);
    }
@@ -114,21 +116,28 @@ public class FTPPeriodicChecker implements FtpConnect, Runnable {
     * 1.1 {@link #dnLoader(FTPFile)}
     * 1.3 {@link #messageToSend(long, long)}
     * 1.4 {@link #eSend(String)}
+    * @see #getFTPFiles()
     */
    @Override
    public void connect() {
       long sizeAll = 0;
       for(FTPFile ftpFile : getFTPFiles()){
-         FTPPeriodicChecker.dnLoader(ftpFile);
+         FtpHomeCamCheck.dnLoader(ftpFile);
          sizeAll += ftpFile.getSize();
       }
       sizeAll = sizeAll / 1024 / 1024;
       long lo = sizeAll - Long.parseLong(properties.getProperty("size2downMeg"));
       properties.setProperty("size2downMeg", sizeAll + "");
-      FTPPeriodicChecker.messageToUser.info(FTPPeriodicChecker.SOURCE_CLASS, Utilit.toUTF("Всего в мегабайтах, после последней проверки: "), sizeAll + "/(LO: " + lo + ")");
+      FtpHomeCamCheck.messageToUser.info(FtpHomeCamCheck.SOURCE_CLASS, Utilit.toUTF("Всего в мегабайтах, после последней проверки: "), sizeAll + "/(LO: " + lo + ")");
       if(lo!=0) eSend(messageToSend(sizeAll, lo));
    }
 
+   /**
+    * 1 {@link #connect()}
+    * 1.2 загрузка файла с сервера.
+    *
+    * @param ftpFile пофайлово
+    */
    private static void dnLoader(FTPFile ftpFile) {
       messageToUser.info(ftpFile.getName(), ftpFile.getGroup(), ftpFile.getLink());
       messageToUser.info(ftpFile.getUser(), ftpFile.getSize() + " size", new Date(ftpFile.getTimestamp().getTimeInMillis()).toString());
@@ -146,24 +155,27 @@ public class FTPPeriodicChecker implements FtpConnect, Runnable {
    private void eSend(String msg) {
       List<String> rcpt = new ArrayList<>();
       rcpt.add("143500@gmail.com");
-      new DbProperties(FTPPeriodicChecker.SOURCE_CLASS).delProps();
+      new DbProperties(FtpHomeCamCheck.SOURCE_CLASS).delProps();
       ESender.sendM(rcpt, "FTP", msg);
-      new FileProps(FTPPeriodicChecker.SOURCE_CLASS).setProps(properties);
-      new DbProperties(FTPPeriodicChecker.SOURCE_CLASS).setProps(properties);
+      new FileProps(FtpHomeCamCheck.SOURCE_CLASS).setProps(properties);
+      new DbProperties(FtpHomeCamCheck.SOURCE_CLASS).setProps(properties);
    }
 
    /**
-    * 1.3 {@link FTPPeriodicChecker#connect()}
+    * 1.3 {@link FtpHomeCamCheck#connect()}
     *
     * @param sizeAll размер файлов в байтах
     * @param difSize разница сейчас-сохраненный в {@link Properties}
     * @return сообщение чтобы отправить по-почте.
     */
    private String messageToSend(long sizeAll, long difSize) {
-      return FTPPeriodicChecker.SOURCE_CLASS + "\n" + Utilit.toUTF("Всего в мегабайтах, после последней проверки: ") + "\n" + sizeAll + "/(dif: " + difSize + ")" + "\n" + properties.toString();
+      return FtpHomeCamCheck.SOURCE_CLASS + "\n" + Utilit.toUTF("Всего в мегабайтах, после последней проверки: ") + "\n" + sizeAll + "/(dif: " + difSize + ")" + "\n" + properties.toString();
    }
 
-   /**
+   /**1 {@link #connect()}
+    * 1.1 {@link #isVeryOld(String)} проверка "давности". Производится путём сверки текущего времени и времени файлика <i>index.dat</i>
+    * на FTP-сервере.
+    * 1.2 {@link #dateAsFolderName()}
     * @param ftpClient      {@link FtpConnect#getClient()}
     * @param workFolderName {@link #eDateSt}
     * @return массив {@link FTPFile}
@@ -176,19 +188,20 @@ public class FTPPeriodicChecker implements FtpConnect, Runnable {
          indexChangeTime = ftpClient.getModificationTime(workFolderName + "index.dat");
       }
       catch(IOException | NullPointerException e){
-         FTPPeriodicChecker.messageToUser.out("FTPCTest_75", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", " ")).getBytes());
-         FTPPeriodicChecker.messageToUser.errorAlert("FTPCTest", e.getMessage(), Arrays.toString(e.getStackTrace()));
+         FtpHomeCamCheck.messageToUser.out("FTPCTest_75", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", " ")).getBytes());
+         FtpHomeCamCheck.messageToUser.errorAlert("FTPCTest", e.getMessage(), Arrays.toString(e.getStackTrace()));
       }
       if(isVeryOld(indexChangeTime)){
-         FTPPeriodicChecker.messageToUser.errorAlert(indexChangeTime, ftpFiles.length + " files to download. ", dateAsFolderName() + " is very old? " + isVeryOld(indexChangeTime));
+         FtpHomeCamCheck.messageToUser.errorAlert(indexChangeTime, ftpFiles.length + " files to download. ", dateAsFolderName() + " is very old? " + isVeryOld(indexChangeTime));
       }
       if(!isVeryOld(indexChangeTime)){
-         FTPPeriodicChecker.messageToUser.info(indexChangeTime, ftpFiles.length + " files to download. ", dateAsFolderName() + " is very old? " + isVeryOld(indexChangeTime));
+         FtpHomeCamCheck.messageToUser.info(indexChangeTime, ftpFiles.length + " files to download. ", dateAsFolderName() + " is very old? " + isVeryOld(indexChangeTime));
       }
       return ftpFiles;
    }
 
-   /**
+   /**1.1 {@link #ftpFiles(FTPClient, String)}
+    *
     * @param indexChangeTime timestamp когда менялся файл index.dat
     * @return давно или нет производились изменения.
     */
@@ -212,13 +225,14 @@ public class FTPPeriodicChecker implements FtpConnect, Runnable {
          properties.setProperty("diff", String.valueOf(l2));
          return l2 > 100000;
       }
-      catch(NumberFormatException e){FTPPeriodicChecker.messageToUser.errorAlert("No index.dat", e.getMessage(), "ID 129");}
+      catch(NumberFormatException e){FtpHomeCamCheck.messageToUser.errorAlert("No index.dat", e.getMessage(), "ID 129");}
       return false;
    }
 
-   /**
+   /**1 {@link #ftpFiles(FTPClient, String)}
+    * 1.2 создаёт имя {@link #eDateSt}
+    * @see Calendar
     * {@link #eDateSt}
-    *
     * @return имя рабочей папки на FTP
     */
    private String dateAsFolderName() {

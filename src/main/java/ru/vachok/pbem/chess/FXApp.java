@@ -3,9 +3,7 @@ package ru.vachok.pbem.chess;
 
 import javafx.application.Application;
 import javafx.concurrent.Task;
-import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Group;
@@ -21,12 +19,13 @@ import ru.vachok.pbem.chess.board.ChessParty;
 import ru.vachok.pbem.chess.board.GamesPosBegin;
 import ru.vachok.pbem.chess.board.figures.VisualBoardFX;
 import ru.vachok.pbem.chess.emails.ESender;
+import ru.vachok.pbem.chess.ftpclient.HomePCFilesCheck;
 import ru.vachok.pbem.chess.fx.ControllerFXApp;
+import ru.vachok.pbem.chess.utilitar.DecoderEnc;
+import ru.vachok.pbem.chess.utilitar.UTF8;
 
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import static javafx.application.Platform.exit;
 import static ru.vachok.pbem.chess.utilitar.Utilit.toUTF;
@@ -58,6 +57,8 @@ public class FXApp extends Application {
     */
    private static final ExecutorService EXECUTOR_SERVICE = Executors.newFixedThreadPool(3);
 
+   private static final ExecutorService EXECUTOR_SERVICE_S = Executors.newScheduledThreadPool(3);
+
    /**
     * Графические сообщения
     */
@@ -81,13 +82,42 @@ public class FXApp extends Application {
    private static MessageToUser staticMess = new MessageCons();
 
    /**
-    * {@link InitProperties}
+    * {@link UTF8}
     */
-   private InitProperties initProperties = new DbProperties(SOURCE_CLASS);
+   private DecoderEnc decoderEnc = new UTF8();
 
+   private Runnable r = () -> {
+      Task<Void> theDo = new Task<Void>() {
+
+         @Override
+         protected Void call() {
+            StartMePChess startMePChess = new StartMePChess(3);
+            textF.appendText(decoderEnc.toAnotherEnc("Стартует периодическая проверка FTP.\nПока это всЁ"));
+            EXECUTOR_SERVICE.submit(startMePChess);
+            textF.appendText(EXECUTOR_SERVICE.toString());
+            return null;
+         }
+      };
+      EXECUTOR_SERVICE.execute(theDo);
+      try{
+         theDo.get();
+      }
+      catch(InterruptedException | ExecutionException e){
+         messageToUser.out("FXApp_104", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", " ")).getBytes());
+         messageToUser.errorAlert(SOURCE_CLASS, e.getMessage(), "FXApp.lambda_104");
+         Thread.currentThread().interrupt();
+      }
+   };
+
+   /**
+    * Пункт меню - Новая партия
+    */
    @FXML
    private MenuItem newParty;
 
+   /**
+    * @return {@link #primStage}
+    */
    public Stage getPrimStage() {
       return primStage;
    }
@@ -175,7 +205,19 @@ public class FXApp extends Application {
     */
    @FXML
    private void loadPartyAct(ActionEvent actionEvent) {
-      initProperties = new DbProperties(GamesPosBegin.class.getSimpleName());
+      Future<?> stringFuture = EXECUTOR_SERVICE_S.submit(new HomePCFilesCheck());
+      Object o = null;
+      try{
+         o = stringFuture.get();
+      }
+      catch(ExecutionException | InterruptedException e){
+         messageToUser.out("FXApp_210", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", " ")).getBytes());
+         messageToUser.errorAlert("FXApp", e.getMessage(), "FXApp.loadPartyAct_210");
+         Thread.currentThread().interrupt();
+      }
+//todo 15.07.2018 (1:15)      String s = Objects.requireNonNull(o).toString();
+
+      InitProperties initProperties = new DbProperties(GamesPosBegin.class.getSimpleName());
       Properties properties = initProperties.getProps();
       Long partyID = Long.parseLong(properties.getProperty("partyid"));
       if(partyID < 100){
@@ -198,35 +240,16 @@ public class FXApp extends Application {
          rcpt.add("143500@gmail.com");
          rcpt.add("olga-barchi@yandex.ru");
          initProperties.setProps(properties);
-         ESender r = new ESender(rcpt, "Playing party ID " + partyID, call.toString().replaceAll(", ", "\n"));
+         ESender eSender = new ESender(rcpt, "Playing party ID " + partyID, call.toString().replaceAll(", ", "\n"));
 
-         EXECUTOR_SERVICE.execute(r);
+         EXECUTOR_SERVICE.execute(eSender);
       }
       catch(Exception e){
          messageToUser.out("FXApp_155", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", " ")).getBytes());
          messageToUser.errorAlert("FXApp", e.getMessage(), "FXApp.sendFigMoves_155");
       }
-      Task<Void> voidTask = doTask();
-      EventHandler<WorkerStateEvent> onRunning = voidTask.getOnRunning();
-      EXECUTOR_SERVICE.execute(voidTask);
-      textF.appendText(onRunning.toString());
       ControllerFXApp controllerFXApp = new ControllerFXApp();
       controllerFXApp.controlFX(new Stage());
-   }
-
-   private Task<Void> doTask() {
-      Task<Void> theDo = new Task<Void>() {
-
-         @Override
-         protected Void call() {
-            StartMePChess startMePChess = new StartMePChess(3);
-            textF.appendText(toUTF("Стартует периодическая проверка FTP.\nПока это всЁ"));
-            EXECUTOR_SERVICE.submit(startMePChess);
-            textF.appendText(EXECUTOR_SERVICE.toString());
-            return null;
-         }
-      };
-      return theDo;
    }
 
    @FXML

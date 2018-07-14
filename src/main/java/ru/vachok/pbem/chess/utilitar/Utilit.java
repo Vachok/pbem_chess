@@ -89,7 +89,9 @@ public class Utilit {
     *
     * @param s строка для преобразования
     * @return Windows -1251 {@link String }
+    * @deprecated
     */
+   @Deprecated (since = "15.07.2018 (0:29)")
    public static String toW1251(String s) {
       try{
          return new String(s.getBytes(), "Windows-1251");
@@ -130,7 +132,9 @@ public class Utilit {
     *
     * @param s строка для преобразования
     * @return Windows -1251 {@link String }
+    * @deprecated since 15.07.2018 (0:29)
     */
+   @Deprecated (since = "15.07.2018 (0:29)")
    public static String toUTF(String s) {
       try{
          return new String(s.getBytes(), "UTF-8");

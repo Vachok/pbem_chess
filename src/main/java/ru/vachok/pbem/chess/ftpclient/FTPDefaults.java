@@ -29,10 +29,10 @@ public enum FTPDefaults {
    /**
     * пароль
     */
-   public static final String DEF_PASSWORD = new DbProperties("pass").getProps().getProperty("defpassbytes");
+   public static final String DEF_PASSWORD = new DbProperties("pass").getProps().getProperty("defpassftp");
 
    /**
-    * Тип передачи.
+    * Тип передачи. Нужен для корректной загрузки.
     */
    public static final int MY_FILE_TYPE = FTP.BINARY_FILE_TYPE;
 }

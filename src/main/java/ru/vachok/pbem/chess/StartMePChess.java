@@ -4,13 +4,13 @@ package ru.vachok.pbem.chess;
 import javafx.concurrent.Task;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.DBFileProp;
+import ru.vachok.mysqlandprops.DbProperties;
 import ru.vachok.mysqlandprops.InitProperties;
 import ru.vachok.pbem.chess.board.GamesPosBegin;
 import ru.vachok.pbem.chess.board.PosinionNow;
 import ru.vachok.pbem.chess.emails.EChecker;
 import ru.vachok.pbem.chess.emails.ESender;
-import ru.vachok.pbem.chess.ftpclient.FTPPeriodicChecker;
+import ru.vachok.pbem.chess.ftpclient.FtpHomeCamCheck;
 import ru.vachok.pbem.chess.utilitar.Utilit;
 import ru.vachok.pbem.chess.vrtx.VrtClientJDBC;
 
@@ -37,9 +37,8 @@ public class StartMePChess extends Task<Class<Void>> {
    private static final String SOURCE_CLASS = StartMePChess.class.getSimpleName();
 
    /**
-    * {@link DBFileProp}
     */
-   private static InitProperties initProperties = new DBFileProp(SOURCE_CLASS);
+   private static InitProperties initProperties = new DbProperties(SOURCE_CLASS);
 
    /**
     * Общение с пользователем.
@@ -121,17 +120,49 @@ public class StartMePChess extends Task<Class<Void>> {
    }
 
    /**
+    * {@link FXApp#main(java.lang.String[])}
+    * Консольная версия приложения.
+    * <p>
+    * <b><i>Задаёт юзеру вопрос.</i></b> Запускает
+    * {@link #doNext(Integer)}
+    *
+    * @see FtpHomeCamCheck
+    * @see StartScheduled
+    * @see EChecker
+    * @see VrtClientJDBC
+    */
+   static void noFX() {
+      Properties properties = initProperties.getProps();
+      messageToUser.info(SOURCE_CLASS, properties.toString(), toUTF(new Utilit().checkTime()));
+      Scanner scanner = new Scanner(System.in);
+      Integer userAnswer = 0;
+      Map<Integer, String> names = StartScheduled.Services.getNames();
+      messageToUser.infoNoTitles(toUTF("Введите имя сервиса:\n" + names.toString().replaceAll(", ", "\n")));
+      while(scanner.hasNextInt()){
+         userAnswer = scanner.nextInt();
+         doNext(userAnswer);
+      }
+   }
+
+   /**
+    * @return {@link #oneNewParty}
+    */
+   private Runnable getOneNewParty() {
+      return oneNewParty;
+   }
+
+   /**
     * {@link #call()} ; {@link #noFX()}
     * Запускает что-либо в зависимости от выбора
     *
     * @param userAnswer ответ пользователя на вопрос что запускать.
     * @see StartScheduled
-    * @see FTPPeriodicChecker
+    * @see FtpHomeCamCheck
     * @see EChecker
     */
    static void doNext(Integer userAnswer) {
       if(userAnswer==3){
-         Runnable runnable = new StartScheduled(new FTPPeriodicChecker(), 90);
+         Runnable runnable = new StartScheduled(new FtpHomeCamCheck(), 90);
          runnable.run();
       }
       if(userAnswer==2){
@@ -151,38 +182,6 @@ public class StartMePChess extends Task<Class<Void>> {
          Matcher m = p.matcher(s);
          while(m.find()) s = m.group();
          messageToUser.confirm(SOURCE_CLASS, "The Move = " + s, "OK? " + s1);
-      }
-   }
-
-   /**
-    * @return {@link #oneNewParty}
-    */
-   private Runnable getOneNewParty() {
-      return oneNewParty;
-   }
-
-   /**
-    * {@link FXApp#main(java.lang.String[])}
-    * Консольная версия приложения.
-    * <p>
-    * <b><i>Задаёт юзеру вопрос.</i></b> Запускает
-    * {@link #doNext(Integer)}
-    *
-    * @see FTPPeriodicChecker
-    * @see StartScheduled
-    * @see EChecker
-    * @see VrtClientJDBC
-    */
-   static void noFX() {
-      Properties properties = initProperties.getProps();
-      messageToUser.info(SOURCE_CLASS, properties.toString(), toUTF(new Utilit().checkTime()));
-      Scanner scanner = new Scanner(System.in);
-      Integer userAnswer = 0;
-      Map<Integer, String> names = StartScheduled.Services.getNames();
-      messageToUser.infoNoTitles(toUTF("Введите имя сервиса:\n" + names.toString().replaceAll(", ", "\n")));
-      while(scanner.hasNextInt()){
-         userAnswer = scanner.nextInt();
-         doNext(userAnswer);
       }
    }
 }
