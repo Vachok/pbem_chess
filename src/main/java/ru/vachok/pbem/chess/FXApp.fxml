@@ -16,17 +16,17 @@
                             <items>
                                 <MenuItem id="newParty" fx:id="newParty" onAction="#newPartyAction"
                                           text="Новая партия"/>
-                                <MenuItem id="loadParty" fx:id="loadParty" text="Загрузить существующую"/>
+                                <MenuItem id="loadParty" onAction="#loadPartyAct" text="Загрузить..."/>
                             </items>
                         </Menu>
                         <Menu mnemonicParsing="false" text="Edit">
                             <items>
-                                <MenuItem id="showBoard" onAction="#showBoard" text="См. доску"/>
+                                <MenuItem id="showBoard" onAction="#showBoard" text="Доска"/>
                             </items>
                         </Menu>
                         <Menu mnemonicParsing="false" text="Help">
                             <items>
-                                <MenuItem id="showIAbout" fx:id="showIAbout" text="About"/>
+                                <MenuItem id="showIAbout" onAction="#sendFigMoves" text="Ходы"/>
                             </items>
                         </Menu>
                     </menus>

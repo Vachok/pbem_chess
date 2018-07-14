@@ -8,7 +8,7 @@ import java.util.concurrent.Callable;
 
 /**
  * Набор стандартных параметров фигуры
- * Расширяет {@link Callable} и возвращает {@link Map<Integer, String>}
+ * Расширяет {@link Callable} и возвращает {@link Map}
  * где {@link Integer} это ID клетки в БД, а {@link String } - полное имя фигуры.
  *
  * @since 12.07.2018 (13:51)
@@ -20,9 +20,7 @@ public interface Figures extends Callable<Map<Integer, String>> {
     */
    int getPriceFor();
 
-   /**
-    * @return int, idchessboard из базы
-    */
+   //todo 14.07.2018 (3:22) DOC
    int getCellID(long partyID);
 
    /**

@@ -17,7 +17,6 @@ import javax.mail.Provider;
 import javax.mail.Session;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -56,9 +55,8 @@ public class ESender implements Runnable {
 
     /**
      * Отправка запрошенного URL
-     *
+     * //todo 14.07.2018 (3:20)
      * @param orderURL запрос вида "get:адрес"
-     * @throws UnsupportedEncodingException bytes2url
      */
     public void sendMail(URL orderURL) {
        subj = "GETTOME (URL4U" + LocalDateTime.now().toString() + ")";

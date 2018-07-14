@@ -8,15 +8,22 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
 import javafx.stage.Stage;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageFX;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.mysqlandprops.*;
+import ru.vachok.pbem.chess.board.ChessParty;
+import ru.vachok.pbem.chess.board.GamesPosBegin;
 import ru.vachok.pbem.chess.board.figures.VisualBoardFX;
+import ru.vachok.pbem.chess.emails.ESender;
 import ru.vachok.pbem.chess.fx.ControllerFXApp;
 
-import java.util.Arrays;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static javafx.application.Platform.exit;
@@ -31,6 +38,12 @@ import static ru.vachok.pbem.chess.utilitar.Utilit.toUTF;
  */
 public class FXApp extends Application {
 
+   /**
+    * Текст, выводимый в главное окно программы.
+    */
+   @FXML
+   public TextArea textF;
+
    private static final String SOURCE_CLASS = FXApp.class.getSimpleName();
 
    /**
@@ -39,23 +52,43 @@ public class FXApp extends Application {
    private static final long TIME_START = System.currentTimeMillis();
 
    /**
+    * Запуск трёх трэдов.
+    */
+   private static final ExecutorService EXECUTOR_SERVICE = Executors.newFixedThreadPool(3);
+
+   /**
+    * Графические сообщения
+    */
+   private static MessageToUser messageToUser = new MessageFX();
+
+   /**
+    * Лист получателей e-mail
+    *
+    * @see ESender
+    */
+   private static List<String> rcpt = new ArrayList<>();
+
+   /**
+    * Главный кадр.
+    */
+   private static Stage primStage;
+
+   /**
     * Статичные сообщения. В консоль.
     */
    private static MessageToUser staticMess = new MessageCons();
 
    /**
-    * Графические сообщения
+    * {@link InitProperties}
     */
-   private MessageToUser messageToUser = new MessageFX();
+   private InitProperties initProperties = new DbProperties(SOURCE_CLASS);
+
+   @FXML
+   private MenuItem newParty;
 
    public Stage getPrimStage() {
       return primStage;
    }
-
-   private static Stage primStage;
-
-   @FXML
-   private TextArea textF;
 
    /**
     * 1. Запуск 1.1-1.4 в зависимости от полученного аргумента.
@@ -93,10 +126,9 @@ public class FXApp extends Application {
     */
    @Override
    public void start(Stage primaryStage) {
-      Group group;
       Scene sceneOne;
       try{
-         group = FXMLLoader.load(getClass().getResource("FXApp.fxml"));
+         Group group = FXMLLoader.load(getClass().getResource("FXApp.fxml"));
          sceneOne = new Scene(group);
          primaryStage.setScene(sceneOne);
       }
@@ -105,18 +137,16 @@ public class FXApp extends Application {
          FXApp.staticMess.errorAlert("FXApp", e.getMessage(), Arrays.toString(e.getStackTrace()));
       }
       primaryStage.show();
-      FXApp.setExit(primaryStage);
-
+      setExit(primaryStage);
    }
 
    /**
     * Установка действий при закрытии фрейма.
-    * Запуск {@link ControllerFXApp}
     *
     * @param primaryStage {@link #start(Stage)}
     */
    private static void setExit(Stage primaryStage) {
-      primStage = primaryStage;
+      FXApp.primStage = primaryStage;
       primaryStage.setOnCloseRequest(event -> {
          primaryStage.setAlwaysOnTop(false);
          primaryStage.setOpacity(0.5);
@@ -124,14 +154,78 @@ public class FXApp extends Application {
          staticMess.info(SOURCE_CLASS, toUTF("Отработано:"), TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - TIME_START) + " min");
          System.exit(0);
       });
-      new ControllerFXApp().controlFX(primaryStage);
    }
 
+
    /**
-    * Стартует новую партию.
-    * {@link StartMePChess#getOneNewParty()}
+    * Парсит {@link ChessParty#partyID} из {@link DbProperties#getProps()} по-имени {@link GamesPosBegin}
+    * Если не смог - пытается взять из {@link FileProps}
+    * Если и это не получилось, идёт снова в {@link DbProperties}, но со-своим именем. {@link #SOURCE_CLASS}
+    * <p>
+    * После выгреба информации, отправляет 2 письма.
+    * <p><b>
+    * rcpt.add("143500@gmail.com");
+    * rcpt.add("olga-barchi@yandex.ru");</b>
+    * <p>
+    * Запуск {@link ControllerFXApp} с новым фреймом.
     *
-    * @param actionEvent нажатие на пункт меню.
+    * @param actionEvent menu click
+    * @see ESender
+    */
+   @FXML
+   private void loadPartyAct(ActionEvent actionEvent) {
+      initProperties = new DbProperties(GamesPosBegin.class.getSimpleName());
+      Properties properties = initProperties.getProps();
+      Long partyID = Long.parseLong(properties.getProperty("partyid"));
+      if(partyID < 100){
+         initProperties = new FileProps(GamesPosBegin.class.getSimpleName());
+         properties = initProperties.getProps();
+         partyID = Long.parseLong(properties.getProperty("partyid"));
+      }
+      else{ initProperties = new DbProperties(SOURCE_CLASS); }
+      textF.appendText(partyID + " is Party ID.\n" + toUTF("Партия начата: ") + new Date(partyID) + "\n" + toUTF("Программа стартовала: ") + TIME_START + toUTF(". Разница с началом партии аж: ") + TimeUnit.MILLISECONDS.toHours(TIME_START - partyID) + toUTF(" часов.\n"));
+      List<String> col = new ArrayList<>();
+      col.add("idchessboard");
+      col.add("cellChar");
+      col.add("cellInt");
+      col.add("standing");
+      initProperties = new DbProperties(SOURCE_CLASS);
+      initProperties.delProps();
+      DBaseFactory dBaseFactory = new DBaseFactory.Builder(new RegRuMysql(), "select * from chessboard" + partyID, col, true).build();
+      try{
+         Map<String, Object> call = dBaseFactory.call();
+         rcpt.add("143500@gmail.com");
+         rcpt.add("olga-barchi@yandex.ru");
+         initProperties.setProps(properties);
+         Runnable r = new ESender(rcpt, "Playing party ID " + partyID, call.toString().replaceAll(", ", "\n"));
+         EXECUTOR_SERVICE.execute(r);
+      }
+      catch(Exception e){
+         messageToUser.out("FXApp_155", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", " ")).getBytes());
+         messageToUser.errorAlert("FXApp", e.getMessage(), "FXApp.sendFigMoves_155");
+      }
+      StartMePChess startMePChess = new StartMePChess(3);
+      textF.appendText(toUTF("Стартует периодическая проверка FTP.\nПока это всЁ"));
+      EXECUTOR_SERVICE.submit(startMePChess);
+      textF.appendText(EXECUTOR_SERVICE.toString());
+      primStage.toBack();
+      ControllerFXApp controllerFXApp = new ControllerFXApp();
+      controllerFXApp.controlFX(new Stage());
+   }
+
+   @FXML
+   private void sendFigMoves(ActionEvent actionEvent) {
+//todo 14.07.2018 (12:07)
+      throw new UnsupportedOperationException("14.07.2018 (11:47)");
+
+   }
+
+
+   /**
+    * Создаёт партию с новым ID
+    *
+    * @param actionEvent menu click
+    * @see StartMePChess#call()
     */
    @FXML
    private void newPartyAction(ActionEvent actionEvent) {

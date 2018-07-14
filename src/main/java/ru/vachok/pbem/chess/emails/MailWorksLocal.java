@@ -36,10 +36,9 @@ public class MailWorksLocal implements Callable {
     */
    private byte[] mailMSGBytes;
 
+
    /**
-    * Конструктор
-    *
-    * @param mailMessages массив сообщения от сервера.
+    * @param mailMessages //fixme 14.07.2018 (3:19)
     */
    public MailWorksLocal(Message[] mailMessages) {
       this.mailMessages = mailMessages;
@@ -49,9 +48,8 @@ public class MailWorksLocal implements Callable {
          messageToUser.errorAlert("MailWorksLocal", "MailWorksLocal ID 46", e.getMessage());
       }
    }
-   /**
-    * Заполняет {@link #mailMSGBytes}
-    */
+
+   //todo 14.07.2018 (3:23)
    private Object mailS() {
       Object o = mailMessages;
       int length = mailMessages.length;

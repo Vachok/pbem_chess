@@ -13,9 +13,7 @@ import java.util.Map;
  */
 public interface ChessBoard {
 
-   /**
-    * ID текущей партии
-    */
+   //todo 14.07.2018 (3:21) DOC
    void setPartyID(long partyID);
 
    /**

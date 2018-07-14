@@ -4,18 +4,16 @@ package ru.vachok.pbem.chess.board;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.DataConnectTo;
-import ru.vachok.mysqlandprops.RegRuMysql;
+import ru.vachok.mysqlandprops.*;
 import ru.vachok.pbem.chess.board.figures.FigNamePrice;
+import ru.vachok.pbem.chess.utilitar.ConstantsFor;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static ru.vachok.pbem.chess.board.figures.FigNamePrice.getKing;
@@ -27,7 +25,7 @@ import static ru.vachok.pbem.chess.board.figures.FigNamePrice.getQueen;
  *
  * @since 27.06.20inte8 (7:46)
  */
-public class GamesPosBegin implements Runnable {
+public class GamesPosBegin implements Callable<Long> {
 
    /**
     * Simple Name класса, для поиска настроек
@@ -39,6 +37,8 @@ public class GamesPosBegin implements Runnable {
     */
    private static final Map<Integer, String> BOARD_CELLS = new ConcurrentHashMap<>();
 
+   private static final Long PARTY_ID = System.currentTimeMillis();
+
    private static MessageToUser messageToUser = new MessageCons();
 
    /**
@@ -46,7 +46,7 @@ public class GamesPosBegin implements Runnable {
     */
    private static DataConnectTo dataConnectTo = new RegRuMysql();
 
-   private static long partyID = System.currentTimeMillis();
+   private static InitProperties initProperties = new DbProperties(SOURCE_CLASS);
 
    private GamesPosBegin() {
    }
@@ -56,15 +56,20 @@ public class GamesPosBegin implements Runnable {
    }
 
    @Override
-   public void run() {
-      FigNamePrice.setPartyID(GamesPosBegin.partyID);
+   public Long call() {
+      FigNamePrice.setPartyID(GamesPosBegin.PARTY_ID);
       GamesPosBegin.main();
+      Properties props = initProperties.getProps();
+      props.setProperty("partyid", PARTY_ID.toString());
+      new FileProps(SOURCE_CLASS).setProps(props);
+      new DbProperties(SOURCE_CLASS).setProps(props);
+      return PARTY_ID;
    }
 
    private static void main() {
       nBoardInDB();
       insFig("white");
-      insFig("black");
+      insFig(ConstantsFor.BLACK);
    }
 
    /**
@@ -82,12 +87,12 @@ public class GamesPosBegin implements Runnable {
       try(Connection connection = mysqlDataSource.getConnection();
           PreparedStatement preparedStatementT = connection.prepareStatement(sqlTr);
           PreparedStatement preparedStatement = connection.prepareStatement(sql)){
-         preparedStatementT.setLong(1, partyID);
-         preparedStatementT.setLong(2, partyID);
+         preparedStatementT.setLong(1, PARTY_ID);
+         preparedStatementT.setLong(2, PARTY_ID);
          preparedStatementT.executeUpdate();
          for(Character c : characterCollection){
             for(Integer i = 1; i < 9; i++){
-               preparedStatement.setLong(1, partyID);
+               preparedStatement.setLong(1, PARTY_ID);
                preparedStatement.setString(2, c.toString());
                preparedStatement.setInt(3, i);
                preparedStatement.executeUpdate();
@@ -105,7 +110,7 @@ public class GamesPosBegin implements Runnable {
     */
    private static void insFig(String color) {
       int inte = 1;
-      if(color.equalsIgnoreCase("black")) inte = 8;
+      if(color.equalsIgnoreCase(ConstantsFor.BLACK)) inte = 8;
       int idCell = boardCellGet("a".charAt(0), inte);
       String figure = color + "-left-rook";
       boardCellSet(figure, FigNamePrice.PRICE_ROOK, idCell);
@@ -132,21 +137,16 @@ public class GamesPosBegin implements Runnable {
       boardCellSet(figure, FigNamePrice.PRICE_ROOK, idCell);
       for(int i = 0; i < 8; i++){
          int inteP = 2;
-         if(color.equalsIgnoreCase("black")) inteP = 7;
+         if(color.equalsIgnoreCase(ConstantsFor.BLACK)) inteP = 7;
          idCell = boardCellGet("abcdefgh".charAt(i), inteP);
          figure = color + "-pawn";
          boardCellSet(figure, FigNamePrice.PRICE_PAWN, idCell);
       }
    }
 
-   /**
-    * Берём состояние клетки по координатам.
-    *
-    * @param cF адрес клетки. char
-    * @param j  адрес клетки int
-    */
+   //todo 14.07.2018 (3:21) DOC
    public static int boardCellGet(Character cF, Integer j) {
-      String sql = "select * from chessboard" + partyID;
+      String sql = "select * from chessboard" + PARTY_ID;
       int id = 0;
       try(Connection connection = dataConnectTo.getDataSource().getConnection();
           PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -173,7 +173,7 @@ public class GamesPosBegin implements Runnable {
       String sql = "update chessboard? set standing = ?, price = ? where idchessboard = ?";
       try(Connection connection = dataConnectTo.getDataSource().getConnection();
           PreparedStatement preparedStatement = connection.prepareStatement(sql)){
-         preparedStatement.setLong(1, partyID);
+         preparedStatement.setLong(1, PARTY_ID);
          preparedStatement.setString(2, figure);
          preparedStatement.setInt(3, figPrice);
          preparedStatement.setInt(4, idCell);

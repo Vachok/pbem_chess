@@ -60,6 +60,14 @@ public enum ConstantsFor {
     */
    public static final String W1251 = "Windows-1251";
 
+   /**
+    * Color Figure
+    */
+   public static final String BLACK = "BLACK";
+
+   /**
+    * <a href="http://www.vachok.ru" target = _blank>http://www.vachok.ru</a>
+    */
    private static InetAddress vachokRu;
 
    /**

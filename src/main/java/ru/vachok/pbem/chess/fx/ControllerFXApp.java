@@ -19,7 +19,7 @@ public class ControllerFXApp {
    /**
     * {@link FXApp#setExit(Stage)}
     */
-   private static Stage controlStage;
+   private Stage controlStage;
 
    /**
     * Графические сообщения.
@@ -36,7 +36,8 @@ public class ControllerFXApp {
     */
    public void controlFX(Stage primStage) {
       primStage.setTitle("HELLO");
-      ControllerFXApp.controlStage = primStage;
+      this.controlStage = primStage;
+      controlStage.show();
    }
 
    /**

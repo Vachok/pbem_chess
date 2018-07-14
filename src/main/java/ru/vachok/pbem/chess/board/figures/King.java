@@ -31,7 +31,7 @@ public class King implements Figures {
    }
 
    /**
-    * @param partyID
+    * @param partyID ID нужной партии //fixme 14.07.2018 (3:18) дописать.
     * @return int, idchessboard из базы
     */
    @Override

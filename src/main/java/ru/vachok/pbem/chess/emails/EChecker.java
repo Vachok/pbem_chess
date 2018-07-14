@@ -76,9 +76,8 @@ public class EChecker implements Runnable, Callable<Map<String, String>> {
         return mailS;
     }
 
-    /**
-     * Создаёт {@link Map} заголовки - base64 mail
-     */
+   //todo 14.07.2018 (3:20)
+
     private Map<String, String> letParty() {
         InitProperties initProperties = new DbProperties("mailP");
         Properties mailP = initProperties.getProps();

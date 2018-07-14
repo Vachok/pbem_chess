@@ -51,6 +51,9 @@ public class StartMePChess extends Task<Class<Void>> {
     */
    private static VrtClientJDBC vrtClientJDBC = new VrtClientJDBC();
 
+   /**
+    * Ответ юзера, для дальнейшей работы.
+    */
    private Integer userAnswer;
 
    public StartMePChess(Integer userAnswer) {
@@ -58,11 +61,6 @@ public class StartMePChess extends Task<Class<Void>> {
    }
 
    private StartMePChess() {
-   }
-
-   @Override
-   public void run() {
-
    }
 
    /**
@@ -74,10 +72,10 @@ public class StartMePChess extends Task<Class<Void>> {
    private Runnable oneNewParty = () -> {
       long l = System.currentTimeMillis();
       List<String> rcpt = new ArrayList<>();
-      Runnable runnable = () -> GamesPosBegin.getInst().run();
+      Callable<Long> partyID = () -> GamesPosBegin.getInst().call();
       Callable<Map<Integer, String>> positionNow = PosinionNow.getInstance(l);
       ExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-      executorService.execute(runnable);
+      executorService.submit(partyID);
       Future<Map<Integer, String>> mapFuture = executorService.submit(positionNow);
       try{
          String s = mapFuture.get().toString();
@@ -89,8 +87,14 @@ public class StartMePChess extends Task<Class<Void>> {
       }
       catch(InterruptedException | ExecutionException e){
          StartMePChess.messageToUser.errorAlert(StartMePChess.SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
+         Thread.currentThread().interrupt();
       }
    };
+
+   @Override
+   public void run() {
+      call();
+   }
 
    @Override
    protected Class<Void> call() {
@@ -150,7 +154,7 @@ public class StartMePChess extends Task<Class<Void>> {
    /**
     * @return {@link #oneNewParty}
     */
-   Runnable getOneNewParty() {
+   private Runnable getOneNewParty() {
       return oneNewParty;
    }
 }

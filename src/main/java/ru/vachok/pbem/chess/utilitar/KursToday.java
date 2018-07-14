@@ -112,7 +112,6 @@ public class KursToday implements Runnable {
 
    /**
     * Парсит файл {@link #fileCbrRuRaw}.
-    * <p>
     */
    private void parseFile() {
       String cbrRuString;

@@ -23,9 +23,7 @@ public class SiteParse {
 
    private MessageToUser messageToUser = new MessageCons();
 
-   /**
-    * в данном случае <a href="https://istra--mo.sudrf.ru/modules.php?name=sud_delo&srv_num=1&H_date=%s.%s.2018" target=_blank>URL сайта</a>
-    */
+   //todo 14.07.2018 (3:22) DOC
    private URL siteURL;
 
    /**
