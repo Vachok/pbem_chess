@@ -35,7 +35,7 @@ public class King implements Figures {
     * @return int, idchessboard из базы
     */
    @Override
-   public int getCellID(long partyID) {
+   public int getCellID(long partyID, Character cF, Integer j) {
       ChessParty chessParty = ChessParty.getInstance(partyID);
       int cellID = chessParty.getCellID("e".charAt(0), 4);
       return cellID;

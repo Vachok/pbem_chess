@@ -1,6 +1,8 @@
 package ru.vachok.pbem.chess.board.figures;
 
 
+import ru.vachok.pbem.chess.board.GamesPosBegin;
+
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -20,11 +22,16 @@ public interface Figures extends Callable<Map<Integer, String>> {
     */
    int getPriceFor();
 
-   //todo 14.07.2018 (3:22) DOC
-   int getCellID(long partyID);
+   /**
+    * @param partyID {@link GamesPosBegin#PARTY_ID}
+    * @param cF      - буква-координата
+    * @param j       - цифра-координата
+    * @return ID ячейки в БД.
+    */
+   int getCellID(long partyID, Character cF, Integer j);
 
    /**
-    * @param cellID {@link Collection} интов - куда можно пойти этойц фигурой
+    * @param cellID {@link Collection} интов - куда можно пойти этой фигурой
     */
    void calculateLegalMovies(Collection<String> cellID);
 
