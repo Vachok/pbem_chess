@@ -16,12 +16,12 @@ public interface EMailsChess {
    /**
     * Отправить сообщение электронной почты.
     *
-    * @param recep адреса электронной почты <b>To</b>.
+    * @param rcpt адреса электронной почты <b>To</b>.
     * @param msg   сообщение, для отправки.
     * @param subj тема
     * @return статус. true = удача.
     */
-   boolean sendMail(List<String> recep, String subj, String msg);
+   boolean sendMail(List<String> rcpt, String subj, String msg);
 
    String checkMail();
 }

@@ -31,7 +31,7 @@ import java.util.Properties;
  *
  * @since 24.06.2018 (10:41)
  */
-public class ESender extends Task<Boolean> implements Runnable {
+public class ESender extends Task<Boolean> implements Runnable, EMailsChess {
 
    /**
     * Simple Name класса, для поиска настроек
@@ -97,6 +97,26 @@ public class ESender extends Task<Boolean> implements Runnable {
       this.msg = msg;
       this.orderURL = orderURL;
       sendURL(orderURL);
+   }
+
+   /**
+    * Отправить сообщение электронной почты.
+    *
+    * @param rcpt адреса электронной почты <b>To</b>.
+    * @param subj тема
+    * @param msg  сообщение, для отправки.
+    * @return статус. true = удача.
+    */
+   @Override
+   public boolean sendMail(List<String> rcpt, String subj, String msg) {
+      this.rcpt = rcpt;
+      ESender.sendM(rcpt, subj, msg);
+      return true;
+   }
+
+   @Override
+   public String checkMail() {
+      return null;
    }
 
    /**
