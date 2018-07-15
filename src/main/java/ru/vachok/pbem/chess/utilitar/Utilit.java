@@ -56,7 +56,9 @@ public class Utilit {
     *
     * @param pageBytes байты строки
     * @return строка в запрошенной кодировке
+    * @deprecated
     */
+   @Deprecated (since = "15.07.2018 (22:08)", forRemoval = true)
    public static String toUTF(byte[] pageBytes) {
       try{
          return new String(pageBytes, "UTF-8");

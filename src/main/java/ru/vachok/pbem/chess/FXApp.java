@@ -24,6 +24,7 @@ import ru.vachok.pbem.chess.fx.ControllerFXApp;
 import ru.vachok.pbem.chess.utilitar.DecoderEnc;
 import ru.vachok.pbem.chess.utilitar.UTF8;
 
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -57,7 +58,7 @@ public class FXApp extends Application {
     */
    private static final ExecutorService EXECUTOR_SERVICE = Executors.newFixedThreadPool(3);
 
-   private static final ExecutorService EXECUTOR_SERVICE_S = Executors.newScheduledThreadPool(3);
+   private static final ScheduledExecutorService EXECUTOR_SERVICE_S = new ScheduledThreadPoolExecutor(1);
 
    /**
     * Графические сообщения
@@ -86,6 +87,10 @@ public class FXApp extends Application {
     */
    private DecoderEnc decoderEnc = new UTF8();
 
+   /**
+    * @deprecated
+    */
+   @Deprecated (since = "15.07.2018 (10:50)", forRemoval = true)
    private Runnable r = () -> {
       Task<Void> theDo = new Task<Void>() {
 
@@ -166,7 +171,7 @@ public class FXApp extends Application {
       }
       catch(Exception e){
          FXApp.staticMess.out("FXApp_29", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", " ")).getBytes());
-         FXApp.staticMess.errorAlert("FXApp", e.getMessage(), Arrays.toString(e.getStackTrace()));
+         FXApp.staticMess.errorAlert(SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
       }
       primaryStage.show();
       setExit(primaryStage);
@@ -205,28 +210,22 @@ public class FXApp extends Application {
     */
    @FXML
    private void loadPartyAct(ActionEvent actionEvent) {
-      Future<?> stringFuture = EXECUTOR_SERVICE_S.submit(new HomePCFilesCheck());
-      Object o = null;
+      Future<?> submit = EXECUTOR_SERVICE_S.submit(new HomePCFilesCheck());
+      Object homePCCheckTask = null;
       try{
-         o = stringFuture.get();
+         homePCCheckTask = submit.get();
       }
       catch(ExecutionException | InterruptedException e){
          messageToUser.out("FXApp_210", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", " ")).getBytes());
-         messageToUser.errorAlert("FXApp", e.getMessage(), "FXApp.loadPartyAct_210");
+         messageToUser.errorAlert(SOURCE_CLASS, e.getMessage(), "FXApp.loadPartyAct_210");
          Thread.currentThread().interrupt();
       }
-//todo 15.07.2018 (1:15)      String s = Objects.requireNonNull(o).toString();
-
       InitProperties initProperties = new DbProperties(GamesPosBegin.class.getSimpleName());
       Properties properties = initProperties.getProps();
       Long partyID = Long.parseLong(properties.getProperty("partyid"));
-      if(partyID < 100){
-         initProperties = new FileProps(GamesPosBegin.class.getSimpleName());
-         properties = initProperties.getProps();
-         partyID = Long.parseLong(properties.getProperty("partyid"));
+      if(homePCCheckTask!=null){
+         textF.appendText(MessageFormat.format("{0}\n{1} is Party ID.\n{2}{3}\n{4}{5}{6}{7}{8}", homePCCheckTask.toString(), partyID, decoderEnc.toAnotherEnc("Партия начата: "), new Date(partyID), decoderEnc.toAnotherEnc("Программа стартовала: "), TIME_START, decoderEnc.toAnotherEnc(". Разница с началом партии аж: "), TimeUnit.MILLISECONDS.toHours(TIME_START - partyID), decoderEnc.toAnotherEnc(" часов.\n")));
       }
-      else{ initProperties = new DbProperties(SOURCE_CLASS); }
-      textF.appendText(partyID + " is Party ID.\n" + toUTF("Партия начата: ") + new Date(partyID) + "\n" + toUTF("Программа стартовала: ") + TIME_START + toUTF(". Разница с началом партии аж: ") + TimeUnit.MILLISECONDS.toHours(TIME_START - partyID) + toUTF(" часов.\n"));
       List<String> col = new ArrayList<>();
       col.add("idchessboard");
       col.add("cellChar");
@@ -245,7 +244,7 @@ public class FXApp extends Application {
          EXECUTOR_SERVICE.execute(eSender);
       }
       catch(Exception e){
-         messageToUser.out("FXApp_155", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", " ")).getBytes());
+         messageToUser.out("FXApp_155", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", " ").replaceAll("ru.vachok", ">>>>>>>>>ru.vachok")).getBytes());
          messageToUser.errorAlert("FXApp", e.getMessage(), "FXApp.sendFigMoves_155");
       }
       ControllerFXApp controllerFXApp = new ControllerFXApp();
@@ -266,7 +265,7 @@ public class FXApp extends Application {
     */
    @FXML
    private void newPartyAction(ActionEvent actionEvent) {
-      Task startMePChess = new StartMePChess(1);
+      Task<? extends Class<Void>> startMePChess = new StartMePChess(1);
       try{
          (( StartMePChess ) startMePChess).call();
       }

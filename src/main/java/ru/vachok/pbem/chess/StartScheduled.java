@@ -153,7 +153,7 @@ public class StartScheduled implements Runnable {
     * Запуск заданий {@link Future}
     */
    private void futureStart() {
-      ScheduledFuture schedule = StartScheduled.SCHEDULED_EXECUTOR_SERVICE.scheduleWithFixedDelay(runMe, initial, period, TimeUnit.SECONDS);
+      ScheduledFuture schedule = StartScheduled.SCHEDULED_EXECUTOR_SERVICE.scheduleWithFixedDelay(runMe, 30, 40, TimeUnit.SECONDS);
       Thread timeR = new TimerClass(runMe.toString(), initial, ( int ) period);
       timeR.start();
       try{

@@ -10,7 +10,8 @@ import ru.vachok.mysqlandprops.DbProperties;
 import ru.vachok.mysqlandprops.FileProps;
 import ru.vachok.mysqlandprops.InitProperties;
 import ru.vachok.pbem.chess.utilitar.ConstantsFor;
-import ru.vachok.pbem.chess.utilitar.Utilit;
+import ru.vachok.pbem.chess.utilitar.DecoderEnc;
+import ru.vachok.pbem.chess.utilitar.UTF8;
 
 import javax.mail.Authenticator;
 import javax.mail.NoSuchProviderException;
@@ -26,21 +27,42 @@ import java.util.Properties;
 
 
 /**
+ * Почтовый отправитель
+ *
  * @since 24.06.2018 (10:41)
  */
 public class ESender extends Task<Boolean> implements Runnable {
 
-    /**
-     * Simple Name класса, для поиска настроек
-     */
-    private static final String SOURCE_CLASS = ESender.class.getSimpleName();
-    private static MessageToUser messageToUser = new MessageCons();
-    private static EmailsProviders p = new VachokMailer();
+   /**
+    * Simple Name класса, для поиска настроек
+    */
+   private static final String SOURCE_CLASS = ESender.class.getSimpleName();
 
+   private static MessageToUser messageToUser = new MessageCons();
+
+   /**
+    * Аутентификатор и настройка провайдера почты.
+    * {@link EmailsProviders}
+    *
+    * @see VachokMailer
+    */
+   private static EmailsProviders p = new VachokMailer();
+
+   private DecoderEnc decoderEnc = new UTF8();
+
+   /**
+    * {@link List} получателей
+    */
    private List<String> rcpt;
 
+   /**
+    * Тема
+    */
    private String subj;
 
+   /**
+    * Тело сообщения
+    */
    private String msg;
 
    /**
@@ -62,7 +84,7 @@ public class ESender extends Task<Boolean> implements Runnable {
    }
 
    /**
-    * Конструктор запроса {@link URL}
+    * Конструктор запроса {@link URL} {@code gettome:}
     *
     * @param rcpt     {@link List} строк - адреса получателей
     * @param subj     тема письма
@@ -81,23 +103,25 @@ public class ESender extends Task<Boolean> implements Runnable {
     * {@link #ESender(List, String, String, URL)}
     * Отправка запрошенного URL
     *
-    * @param url //todo 14.07.2018 (3:20)
+    * @param url {@link #orderURL}
+    * @see EChecker#getUrlAddress(String)
     */
-   public void sendURL(URL url) {
-       subj = "GETTOME (URL4U" + LocalDateTime.now().toString() + ")";
-        byte[] pageBytes = new byte[ConstantsFor.MEGABYTE];
-       try(InputStream openStreamURL = orderURL.openStream()){
-            pageBytes = openStreamURL.readAllBytes();
-        } catch (IOException e) {
-          ESender.messageToUser.out("ESender_50", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", " ")).getBytes());
-          ESender.messageToUser.errorAlert("ESender", e.getMessage(), Arrays.toString(e.getStackTrace()));
-       }
-      this.msg = Utilit.toUTF(pageBytes);
-       sendMail();
+   void sendURL(URL url) {
+      subj = "GETTOME (URL4U" + LocalDateTime.now().toString() + ")";
+      byte[] pageBytes = new byte[ConstantsFor.MEGABYTE];
+      try(InputStream openStreamURL = orderURL.openStream()){
+         pageBytes = openStreamURL.readAllBytes();
+      }
+      catch(IOException e){
+         ESender.messageToUser.out("ESender_50", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", " ")).getBytes());
+         ESender.messageToUser.errorAlert("ESender", e.getMessage(), Arrays.toString(e.getStackTrace()));
+      }
+      this.msg = decoderEnc.toAnotherFromBytes(pageBytes);
+      sendMail();
    }
 
    /**
-     * Отправка сообщения электронной почты.
+    * Отправка сообщения электронной почты.
     *
     * @return true = ok.
     * @see VachokMailer#chessMail()
@@ -132,20 +156,15 @@ public class ESender extends Task<Boolean> implements Runnable {
    }
 
    /**
-    * {@link #ESender(List, String, String)}
+    * Отправить почту. Аутентификатор {@link VachokMailer.AuthForChess}
+    * {@link EmailsProviders#chessMail()}
+    * {@link VachokMailer#chessMail()}
+    * {@link Properties} javaid для метода - {@code mailP}
     *
-    * @return true = отправлено
+    * @param rcpt {@link #rcpt}
+    * @param subj {@link #subj}
+    * @param msg  {@link #msg}
     */
-   @Override
-   protected Boolean call() {
-      return sendMail();
-   }
-
-    @Override
-    public void run() {
-       sendMail();
-    }
-
    public static void sendM(List<String> rcpt, String subj, String msg) {
       InitProperties initPr = new DbProperties("mailP");
       Properties mailP = initPr.getProps();
@@ -171,5 +190,24 @@ public class ESender extends Task<Boolean> implements Runnable {
          ESender.messageToUser.out("EChecker_149", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
          ESender.messageToUser.errorAlert("EChecker", e.getMessage(), Arrays.toString(e.getStackTrace()));
       }
+   }
+
+   /**
+    * 1. Запуск.
+    * 1.1 {@link #sendMail()}
+    */
+   @Override
+   public void run() {
+      sendMail();
+   }
+
+   /**
+    * {@link #ESender(List, String, String)}
+    *
+    * @return true = отправлено
+    */
+   @Override
+   protected Boolean call() {
+      return sendMail();
    }
 }

@@ -1,7 +1,6 @@
 package ru.vachok.pbem.chess.ftpclient;
 
 
-import javafx.concurrent.Task;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.DbProperties;
@@ -13,6 +12,7 @@ import ru.vachok.pbem.chess.utilitar.UTF8;
 import java.io.File;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.concurrent.Callable;
 
 
 /**
@@ -20,7 +20,7 @@ import java.util.Properties;
  *
  * @since 15.07.2018 (0:09)
  */
-public class HomePCFilesCheck extends Task<String> {
+public class HomePCFilesCheck implements Callable<String> {
 
    /**
     * Simple Name класса, для поиска настроек
@@ -43,16 +43,6 @@ public class HomePCFilesCheck extends Task<String> {
    private InitProperties initProperties = new DbProperties(SOURCE_CLASS);
 
    /**
-    * 1. Запуск
-    *
-    * @return {@link #getCheckLocalFiles()}
-    */
-   @Override
-   protected String call() {
-      return getCheckLocalFiles();
-   }
-
-   /**
     * {@link #call()}
     *
     * @return "Размер файла " + f.getName() + f.length() / ConstantsFor.KILOBYTE + " Megabytes.\n" + "Всего: " + l / ConstantsFor.KILOBYTE;
@@ -68,5 +58,13 @@ public class HomePCFilesCheck extends Task<String> {
          return "Размер файла " + f.getName() + f.length() / ConstantsFor.KILOBYTE + " Megabytes.\n" + "Всего: " + l / ConstantsFor.KILOBYTE;
       }
       throw new UnsupportedOperationException(SOURCE_CLASS);
+   }
+
+   /**
+    * @return {@link #getCheckLocalFiles()}
+    */
+   @Override
+   public String call() {
+      return getCheckLocalFiles();
    }
 }

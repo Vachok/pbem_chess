@@ -11,6 +11,8 @@ import ru.vachok.pbem.chess.board.PosinionNow;
 import ru.vachok.pbem.chess.emails.EChecker;
 import ru.vachok.pbem.chess.emails.ESender;
 import ru.vachok.pbem.chess.ftpclient.FtpHomeCamCheck;
+import ru.vachok.pbem.chess.utilitar.DecoderEnc;
+import ru.vachok.pbem.chess.utilitar.UTF8;
 import ru.vachok.pbem.chess.utilitar.Utilit;
 import ru.vachok.pbem.chess.vrtx.VrtClientJDBC;
 
@@ -46,6 +48,7 @@ public class StartMePChess extends Task<Class<Void>> {
     */
    private static MessageToUser messageToUser = new MessageCons();
 
+   private static DecoderEnc decoderEnc = new UTF8();
    /**
     * {@link VrtClientJDBC}
     */
@@ -133,7 +136,7 @@ public class StartMePChess extends Task<Class<Void>> {
     */
    static void noFX() {
       Properties properties = initProperties.getProps();
-      messageToUser.info(SOURCE_CLASS, properties.toString(), toUTF(new Utilit().checkTime()));
+      messageToUser.info(SOURCE_CLASS, properties.toString(), decoderEnc.toAnotherEnc(new Utilit().checkTime()));
       Scanner scanner = new Scanner(System.in);
       Integer userAnswer = 0;
       Map<Integer, String> names = StartScheduled.Services.getNames();

@@ -40,7 +40,7 @@ public interface FtpConnect {
    /**
     * @return массив файлов на FTP-сервере.
     */
-   FTPFile[] getFTPFiles();
+   FTPFile[] getWorkFolderName();
 
    /**
     * Соединиться с сервером

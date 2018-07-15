@@ -33,7 +33,7 @@ public class FTPDownloader implements Runnable, FtpConnect {
    }
 
    @Override
-   public FTPFile[] getFTPFiles() {
+   public FTPFile[] getWorkFolderName() {
       throw FTPDownloader.NOT_READY_YET;
    }
 }
