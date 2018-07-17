@@ -3,6 +3,9 @@ package ru.vachok.pbem.chess.utilitar;
 
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.mysqlandprops.A161Mysql;
+import ru.vachok.mysqlandprops.DataConnectTo;
+import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.pbem.chess.emails.EChecker;
 
 import java.io.IOException;
@@ -49,6 +52,7 @@ public enum ConstantsFor {
 
    /**
     * Название кодировки
+    *
     */
    public static final String UTF_8 = "UTF-8";
 
@@ -74,10 +78,13 @@ public enum ConstantsFor {
     */
    public static final String GETTOME = "gettome:";
 
-   /**
-    * <a href="http://www.vachok.ru" target = _blank>http://www.vachok.ru</a>
-    */
-   private static InetAddress vachokRu;
+   public static final UnsupportedOperationException NOT_READY = new UnsupportedOperationException("NOT READY, Sorry...");
+
+   public static final DataConnectTo DATA_CONNECT_TO_REG = new RegRuMysql();
+
+   public static final DataConnectTo DATA_CONNECT_TO_A161 = new A161Mysql("testb");
+
+   public static DecoderEnc decoderEncUtf8 = new UTF8();
 
    /**
     * Доступность <a href="http://www.vachok.ru" target=_blank></a>
@@ -95,7 +102,7 @@ public enum ConstantsFor {
 
    static {
       try{
-         vachokRu = InetAddress.getByName("vachok.ru");
+         InetAddress vachokRu = InetAddress.getByName("vachok.ru");
          regIsOk = vachokRu.isReachable(TIMEOUT_1000);
       }
       catch(IOException e){
@@ -104,25 +111,11 @@ public enum ConstantsFor {
          messageToUser.errorAlert("ConstantsFor", e.getMessage(), Arrays.toString(e.getStackTrace()));
       }
    }
-
    /**
-    * Вместо {@code toString}...
-    *
-    * @return строка "типа" {@code toString}
-    */
-   public static String con() {
-      return "ConstantsFor{" +
-            "OK=" + OK +
-            ", regIsOk=" + regIsOk +
-            ", TIMEOUT_1000=" + TIMEOUT_1000 +
-            ", vachokRu=" + vachokRu +
-            '}';
-   }
-
-   /**
-    * @return //todo 12.07.2018 (15:44)
+    * @return строка в помощью по-программе.
     */
    public static String help() {
-      return Utilit.toUTF("а тут могла выть ваша...");
+      decoderEncUtf8.toAnotherEnc("Хуйня, ващэ хуйня!");
+      throw NOT_READY;
    }
 }

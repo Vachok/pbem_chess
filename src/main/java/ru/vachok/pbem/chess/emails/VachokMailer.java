@@ -125,7 +125,7 @@ public class VachokMailer implements Serializable, EmailsProviders {
     * @see EChecker
     * @since 20.06.2018 (16:22)
     */
-   static class AuthForChess extends Authenticator {
+   public static class AuthForChess extends Authenticator {
 
       private static final String SOURCE_CLASS = AuthForChess.class.getSimpleName();
 

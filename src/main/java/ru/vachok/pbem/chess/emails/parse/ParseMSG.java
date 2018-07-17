@@ -1,6 +1,8 @@
 package ru.vachok.pbem.chess.emails.parse;
 
 
+import javax.mail.FetchProfile;
+import javax.mail.Folder;
 import javax.mail.Message;
 
 
@@ -11,11 +13,11 @@ import javax.mail.Message;
  */
 public interface ParseMSG {
 
-
-   /**
-    * @return {@link Message} массив сообщений из ящика.
+   /** Получить папку из ящика.
+    * @param folderName имя папки. По-умолчанию - Inbox
+    * @return папка.
     */
-   Message[] checkMessages();
+   Folder mailboxFolder(String folderName);
 
    /**
     * @param toEmail {@link Message}, для отсылки SMTP.
@@ -26,4 +28,9 @@ public interface ParseMSG {
     * Очистка ящика
     */
    void cleanMailbox();
+
+   /**
+    * @return {@link FetchProfile}
+    */
+   FetchProfile fetchProfile();
 }
