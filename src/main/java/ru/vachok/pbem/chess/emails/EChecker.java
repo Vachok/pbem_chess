@@ -8,6 +8,7 @@ import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.DbProperties;
 import ru.vachok.mysqlandprops.InitProperties;
 import ru.vachok.mysqlandprops.RegRuMysql;
+import ru.vachok.pbem.chess.StartScheduled;
 import ru.vachok.pbem.chess.utilitar.ConstantsFor;
 import ru.vachok.pbem.chess.utilitar.Utilit;
 
@@ -33,7 +34,9 @@ import java.util.regex.Pattern;
  *
  * @see EMailsChess
  * @since 20.06.2018 (11:43)
+ * @deprecated
  */
+@Deprecated (since = "17.07.2018 (20:19)")
 public class EChecker implements Runnable, Callable<Map<String, String>> {
 
    /**
@@ -41,20 +44,44 @@ public class EChecker implements Runnable, Callable<Map<String, String>> {
     */
    private static final String SOURCE_CLASS = EChecker.class.getSimpleName();
 
+   /**
+    * {@link MessageCons}
+    */
    private static MessageToUser messageToUser = new MessageCons();
 
+   /**
+    * {@link RegRuMysql}
+    */
    private static DataConnectTo dataConnectTo = new RegRuMysql();
 
+   /**
+    * Адреса получателей
+    * {@link #run()}
+    */
    private static List<String> rcpt = new ArrayList<>();
 
+   /**
+    * Сообщения из ящика
+    * {@link #getPOP3MessagesMap()}
+    */
    private Map<String, String> mailS = new ConcurrentHashMap<>();
 
+   /**
+    * Тема сообщения
+    */
    private String subj;
 
+   /** {@link #subj}
+    * @param subj {@link StartScheduled#checkPeriodically()}
+    */
    public EChecker(String subj) {
       this.subj = subj;
    }
 
+   /**Вызов проверки ящика. {@link StartScheduled#checkPeriodically()}
+    * @return {@link #getPOP3MessagesMap()}
+    *
+    */
    @Override
    public Map<String, String> call() {
       Map<String, String> cM = getPOP3MessagesMap();
@@ -138,12 +165,15 @@ public class EChecker implements Runnable, Callable<Map<String, String>> {
    }
 
    /**
+    * {@link #run()}
     * Парсит {@link ConstantsFor#GETTOME} строку.
+    * {@link #sendResultToDatabase(String)}
     *
-    * @param mesgInString //todo 14.07.2018 (19:32)
+    * @param getToMeSting строка из почтового сообщения.
+    * @see ESender#sendURL(URL)
     */
-   private void getUrlAddress(String mesgInString) {
-      String[] sS = mesgInString.split(ConstantsFor.GETTOME);
+   private void getUrlAddress(String getToMeSting) {
+      String[] sS = getToMeSting.split(ConstantsFor.GETTOME);
       URL url = null;
       StringBuilder sb = new StringBuilder();
       char[] chars = sS[1].toCharArray();
@@ -156,23 +186,27 @@ public class EChecker implements Runnable, Callable<Map<String, String>> {
          url = new URL(sb.toString());
          try(InputStream inputStream = url.openStream()){
             byte[] reads = inputStream.readAllBytes();
-            mesgInString = new String(reads, "UTF-8");
-            EChecker.messageToUser.infoNoTitles(mesgInString);
+            getToMeSting = new String(reads, "UTF-8");
+            EChecker.messageToUser.infoNoTitles(getToMeSting);
          }
       }
       catch(IOException e){
-         new ESender(EChecker.rcpt, new Date().toString(), e.getMessage() + "\n" + mesgInString);
+         new ESender(EChecker.rcpt, new Date().toString(), e.getMessage() + "\n" + getToMeSting);
          EChecker.messageToUser.out("EChecker_141", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n") + "\nEChecker.run, and ID (lineNum) is 129").getBytes());
       }
-      new ESender(EChecker.rcpt, new Date().toString(), "" + "\n" + mesgInString).sendURL(url);
-      sendResultToDatabase(mesgInString);
+      new ESender(EChecker.rcpt, new Date().toString(), "" + "\n" + getToMeSting).sendURL(url);
+      sendResultToDatabase(getToMeSting);
    }
 
-   private void sendResultToDatabase(String rez) {
+   /** Отправка результатов парсинга в БД
+    * @param urlParseResult {@link #getUrlAddress(String)}
+    * @see EChecker#dataConnectTo
+    */
+   private void sendResultToDatabase(String urlParseResult) {
       String sql = "insert into rez (rez, pc) values (?,?)";
       try(Connection connection = EChecker.dataConnectTo.getDataSource().getConnection();
           PreparedStatement ps = connection.prepareStatement(sql)){
-         ps.setString(1, rez);
+         ps.setString(1, urlParseResult);
          ps.setString(2, EChecker.SOURCE_CLASS);
          ps.executeUpdate();
       }
