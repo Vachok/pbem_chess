@@ -38,7 +38,7 @@ public class MailWorksLocal implements Callable {
 
 
    /**
-    * @param mailMessages //fixme 14.07.2018 (3:19)
+    * @param mailMessages массив {@link Message}, после проверки ящика
     */
    public MailWorksLocal(Message[] mailMessages) {
       this.mailMessages = mailMessages;
@@ -49,7 +49,7 @@ public class MailWorksLocal implements Callable {
       }
    }
 
-   //todo 14.07.2018 (3:23)
+
    private Object mailS() {
       Object o = mailMessages;
       int length = mailMessages.length;
@@ -80,6 +80,7 @@ public class MailWorksLocal implements Callable {
    public Object call() throws Exception {
       return thisObject.call();
    }
+
    private BASE64DecoderStream decode(Message[] inputMesEnc) {
       for(Message m : inputMesEnc){
          try(BASE64DecoderStream outputStream = new BASE64DecoderStream(m.getInputStream())){
