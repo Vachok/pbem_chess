@@ -5,6 +5,8 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.*;
+import ru.vachok.pbem.chess.FXApp;
+import ru.vachok.pbem.chess.StartMePChess;
 import ru.vachok.pbem.chess.board.figures.FigNamePrice;
 import ru.vachok.pbem.chess.utilitar.ConstantsFor;
 
@@ -37,8 +39,14 @@ public class GamesPosBegin implements Callable<Long> {
     */
    private static final Map<Integer, String> BOARD_CELLS = new ConcurrentHashMap<>();
 
+   /**
+    * {@link System#currentTimeMillis()}
+    */
    private static final Long PARTY_ID = System.currentTimeMillis();
 
+   /**
+    * {@link MessageCons}
+    */
    private static MessageToUser messageToUser = new MessageCons();
 
    /**
@@ -46,11 +54,22 @@ public class GamesPosBegin implements Callable<Long> {
     */
    private static DataConnectTo dataConnectTo = new RegRuMysql();
 
+   /**
+    * {@link DbProperties}
+    */
    private static InitProperties initProperties = new DbProperties(SOURCE_CLASS);
 
+   /**
+    * Призавтно. Singletone
+    */
    private GamesPosBegin() {
    }
 
+   /**
+    * {@link StartMePChess}, {@link FXApp}
+    *
+    * @return new Instance
+    */
    public static GamesPosBegin getInst() {
       return new GamesPosBegin();
    }
@@ -66,13 +85,19 @@ public class GamesPosBegin implements Callable<Long> {
       return PARTY_ID;
    }
 
+   /**
+    * {@link #call()}
+    * MAIN метод
+    * {@link #nBoardInDB()}
+    * {@link #insFig(String)}
+    */
    private static void main() {
       nBoardInDB();
       insFig("white");
       insFig(ConstantsFor.BLACK);
    }
 
-   /**
+   /**{@link #main()}
     * Чистит таблицу chessboard, для новой партии.
     */
    private static void nBoardInDB() {
@@ -105,7 +130,8 @@ public class GamesPosBegin implements Callable<Long> {
 
    /**
     * Расставляет фигуры
-    *
+    *{@link #boardCellGet(Character, Integer)}
+    * {@link #boardCellSet(String, int, int)}
     * @param color какого цвета фигуру ставим
     */
    private static void insFig(String color) {
@@ -144,8 +170,13 @@ public class GamesPosBegin implements Callable<Long> {
       }
    }
 
-   //todo 14.07.2018 (3:21) DOC
-   public static int boardCellGet(Character cF, Integer j) {
+
+   /**
+    * @param cF буква-координата
+    * @param j  цифра-координата
+    * @return ID ячейки.
+    */
+   private static int boardCellGet(Character cF, Integer j) {
       String sql = "select * from chessboard" + PARTY_ID;
       int id = 0;
       try(Connection connection = dataConnectTo.getDataSource().getConnection();
@@ -169,7 +200,14 @@ public class GamesPosBegin implements Callable<Long> {
       return id;
    }
 
-   public static void boardCellSet(String figure, int figPrice, int idCell) {
+   /**
+    * {@link #insFig(String)}
+    *
+    * @param figure   {@link FigNamePrice}
+    * @param figPrice {@link FigNamePrice}
+    * @param idCell   {@link }
+    */
+   private static void boardCellSet(String figure, int figPrice, int idCell) {
       String sql = "update chessboard? set standing = ?, price = ? where idchessboard = ?";
       try(Connection connection = dataConnectTo.getDataSource().getConnection();
           PreparedStatement preparedStatement = connection.prepareStatement(sql)){

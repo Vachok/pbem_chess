@@ -13,7 +13,12 @@ import java.util.Map;
  */
 public interface ChessBoard {
 
-   //todo 14.07.2018 (3:21) DOC
+
+   /**
+    * ID партии, как текущий timestamp
+    *
+    * @param partyID {@link System#currentTimeMillis()}
+    */
    void setPartyID(long partyID);
 
    /**

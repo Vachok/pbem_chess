@@ -30,9 +30,12 @@ public class King implements Figures {
       return King.FIG_PRICE;
    }
 
-   /**
-    * @param partyID ID нужной партии //fixme 14.07.2018 (3:18) дописать.
+   /**Получение ID ячейки на доске.
+    * @param partyID ID нужной партии
+    * @param cF буква-координата
+    * @param j цифра-координата
     * @return int, idchessboard из базы
+    * {@link ChessParty#getInstance(long)}
     */
    @Override
    public int getCellID(long partyID, Character cF, Integer j) {
