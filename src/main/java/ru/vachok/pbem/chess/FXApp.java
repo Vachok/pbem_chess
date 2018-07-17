@@ -98,18 +98,18 @@ public class FXApp extends Application {
          protected Void call() {
             StartMePChess startMePChess = new StartMePChess(3);
             textF.appendText(decoderEnc.toAnotherEnc("Стартует периодическая проверка FTP.\nПока это всЁ"));
-            EXECUTOR_SERVICE.submit(startMePChess);
-            textF.appendText(EXECUTOR_SERVICE.toString());
+            FXApp.EXECUTOR_SERVICE.submit(startMePChess);
+            textF.appendText(FXApp.EXECUTOR_SERVICE.toString());
             return null;
          }
       };
-      EXECUTOR_SERVICE.execute(theDo);
+      FXApp.EXECUTOR_SERVICE.execute(theDo);
       try{
          theDo.get();
       }
       catch(InterruptedException | ExecutionException e){
-         messageToUser.out("FXApp_104", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", " ")).getBytes());
-         messageToUser.errorAlert(SOURCE_CLASS, e.getMessage(), "FXApp.lambda_104");
+         FXApp.messageToUser.out("FXApp_104", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", " ")).getBytes());
+         FXApp.messageToUser.errorAlert(FXApp.SOURCE_CLASS, e.getMessage(), "FXApp.lambda_104");
          Thread.currentThread().interrupt();
       }
    };
@@ -124,7 +124,7 @@ public class FXApp extends Application {
     * @return {@link #primStage}
     */
    public Stage getPrimStage() {
-      return primStage;
+      return FXApp.primStage;
    }
 
    /**
@@ -171,10 +171,10 @@ public class FXApp extends Application {
       }
       catch(Exception e){
          FXApp.staticMess.out("FXApp_29", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", " ")).getBytes());
-         FXApp.staticMess.errorAlert(SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
+         FXApp.staticMess.errorAlert(FXApp.SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
       }
       primaryStage.show();
-      setExit(primaryStage);
+      FXApp.setExit(primaryStage);
    }
 
    /**
@@ -210,42 +210,42 @@ public class FXApp extends Application {
     */
    @FXML
    private void loadPartyAct(ActionEvent actionEvent) {
-      Future<?> submit = EXECUTOR_SERVICE_S.submit(new HomePCFilesCheck());
+      Future<?> submit = FXApp.EXECUTOR_SERVICE_S.submit(new HomePCFilesCheck());
       Object homePCCheckTask = null;
       try{
          homePCCheckTask = submit.get();
       }
       catch(ExecutionException | InterruptedException e){
-         messageToUser.out("FXApp_210", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", " ")).getBytes());
-         messageToUser.errorAlert(SOURCE_CLASS, e.getMessage(), "FXApp.loadPartyAct_210");
+         FXApp.messageToUser.out("FXApp_210", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", " ")).getBytes());
+         FXApp.messageToUser.errorAlert(FXApp.SOURCE_CLASS, e.getMessage(), "FXApp.loadPartyAct_210");
          Thread.currentThread().interrupt();
       }
       InitProperties initProperties = new DbProperties(GamesPosBegin.class.getSimpleName());
       Properties properties = initProperties.getProps();
       Long partyID = Long.parseLong(properties.getProperty("partyid"));
       if(homePCCheckTask!=null){
-         textF.appendText(MessageFormat.format("{0}\n{1} is Party ID.\n{2}{3}\n{4}{5}{6}{7}{8}", homePCCheckTask.toString(), partyID, decoderEnc.toAnotherEnc("Партия начата: "), new Date(partyID), decoderEnc.toAnotherEnc("Программа стартовала: "), TIME_START, decoderEnc.toAnotherEnc(". Разница с началом партии аж: "), TimeUnit.MILLISECONDS.toHours(TIME_START - partyID), decoderEnc.toAnotherEnc(" часов.\n")));
+         textF.appendText(MessageFormat.format("{0}\n{1} is Party ID.\n{2}{3}\n{4}{5}{6}{7}{8}", homePCCheckTask.toString(), partyID, decoderEnc.toAnotherEnc("Партия начата: "), new Date(partyID), decoderEnc.toAnotherEnc("Программа стартовала: "), FXApp.TIME_START, decoderEnc.toAnotherEnc(". Разница с началом партии аж: "), TimeUnit.MILLISECONDS.toHours(FXApp.TIME_START - partyID), decoderEnc.toAnotherEnc(" часов.\n")));
       }
       List<String> col = new ArrayList<>();
       col.add("idchessboard");
       col.add("cellChar");
       col.add("cellInt");
       col.add("standing");
-      initProperties = new DbProperties(SOURCE_CLASS);
+      initProperties = new DbProperties(FXApp.SOURCE_CLASS);
       initProperties.delProps();
       DBaseFactory dBaseFactory = new DBaseFactory.Builder(new RegRuMysql(), "select * from chessboard" + partyID, col, true).build();
       try{
          Map<String, Object> call = dBaseFactory.call();
-         rcpt.add("143500@gmail.com");
-         rcpt.add("olga-barchi@yandex.ru");
+         FXApp.rcpt.add("143500@gmail.com");
+         FXApp.rcpt.add("olga-barchi@yandex.ru");
          initProperties.setProps(properties);
-         ESender eSender = new ESender(rcpt, "Playing party ID " + partyID, call.toString().replaceAll(", ", "\n"));
+         ESender eSender = new ESender(FXApp.rcpt, "Playing party ID " + partyID, call.toString().replaceAll(", ", "\n"));
 
-         EXECUTOR_SERVICE.execute(eSender);
+         FXApp.EXECUTOR_SERVICE.execute(eSender);
       }
       catch(Exception e){
-         messageToUser.out("FXApp_155", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", " ").replaceAll("ru.vachok", ">>>>>>>>>ru.vachok")).getBytes());
-         messageToUser.errorAlert("FXApp", e.getMessage(), "FXApp.sendFigMoves_155");
+         FXApp.messageToUser.out("FXApp_155", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", " ").replaceAll("ru.vachok", ">>>>>>>>>ru.vachok")).getBytes());
+         FXApp.messageToUser.errorAlert("FXApp", e.getMessage(), "FXApp.sendFigMoves_155");
       }
       ControllerFXApp controllerFXApp = new ControllerFXApp();
       controllerFXApp.controlFX(new Stage());
@@ -253,8 +253,7 @@ public class FXApp extends Application {
 
    @FXML
    private void sendFigMoves(ActionEvent actionEvent) {
-      //todo 14.07.2018 (12:07)
-      throw new UnsupportedOperationException("14.07.2018 (11:47)");
+
    }
 
    /**
@@ -270,7 +269,7 @@ public class FXApp extends Application {
          (( StartMePChess ) startMePChess).call();
       }
       catch(Exception e){
-         messageToUser.errorAlert(SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
+         FXApp.messageToUser.errorAlert(FXApp.SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
       }
       double progress = startMePChess.getProgress();
       textF.appendText("Progress :" + "\n" + progress);
@@ -284,8 +283,8 @@ public class FXApp extends Application {
    @FXML
    private void showBoard(ActionEvent actionEvent) {
       VisualBoardFX visualBoardFX = new VisualBoardFX(new Stage());
-      primStage.setOpacity(0.1);
-      primStage.toBack();
+      FXApp.primStage.setOpacity(0.1);
+      FXApp.primStage.toBack();
       visualBoardFX.run();
 
    }
