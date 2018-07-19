@@ -1,6 +1,9 @@
 package ru.vachok.pbem.chess.board;
 
 
+import java.util.Map;
+
+
 /**
  * Шахматная доска.
  * <p>
@@ -10,18 +13,23 @@ package ru.vachok.pbem.chess.board;
  */
 public interface ChessBoard {
 
-   /**
-    * Сделать ход
-    */
-   void makeMove();
 
    /**
-    * "Съесть"
+    * ID партии, как текущий timestamp
+    *
+    * @param partyID {@link System#currentTimeMillis()}
     */
-   void takeFigure();
+   void setPartyID(long partyID);
 
    /**
-    * Рассчёт следующего хода.
+    * @return текущее положение на доске.
     */
-   void calculateNext();
+   Map<Integer, String> currentBoardPositions();
+
+   /**
+    @param c координата буквенная
+    @param i координата цифровая
+     * @return ID ячейки
+    */
+   int getCellID(Character c, Integer i);
 }

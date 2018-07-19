@@ -19,7 +19,7 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 
-/**
+/** //todo 12.07.2018 (15:43)
  * @since 27.06.2018 (1:09)
  */
 public class VrtClientJDBC extends AbstractVerticle {
@@ -39,7 +39,7 @@ public class VrtClientJDBC extends AbstractVerticle {
               "context=" + context +
               ", initProperties=" + initProperties +
               ", messageToUser=" + messageToUser +
-              ", SOURCE_CLASS='" + SOURCE_CLASS + '\'' +
+              ", SOURCE_CLASS='" + VrtClientJDBC.SOURCE_CLASS + '\'' +
               ", vertx=" + vertx +
               '}';
     }
@@ -48,7 +48,7 @@ public class VrtClientJDBC extends AbstractVerticle {
         initProperties.getProps();
         Map<String, String> mapA = new ConcurrentHashMap<>();
         SQLClient sqlClient = getSQLClient();
-        String sql = "select * from properties";
+        String sql = "select * from chessboard";
         SQLClient query = sqlClient.query(sql, event -> {
             try {
                 Context orCreateContext = getVertx().getOrCreateContext();
@@ -65,7 +65,7 @@ public class VrtClientJDBC extends AbstractVerticle {
         messageToUser.infoNoTitles(mapA.toString() + "   " + this.context.toString());
     }
 
-    public SQLClient getSQLClient() {
+    private SQLClient getSQLClient() {
         return JDBCClient.createShared(Vertx.vertx(), configJSON());
     }
 

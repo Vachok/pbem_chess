@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<Group xmlns:fx="http://javafx.com/fxml/1" id="root" xmlns="http://javafx.com/javafx/8"
+       fx:controller="ru.vachok.pbem.chess.FXApp">
+    <children>
+        <AnchorPane id="mainPane" prefHeight="400.0" prefWidth="600.0">
+            <children>
+                <MenuBar layoutY="2.0" prefHeight="27.0" prefWidth="600.0" AnchorPane.bottomAnchor="373.0"
+                         AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <menus>
+                        <Menu text="File">
+                            <items>
+                                <MenuItem id="newParty" fx:id="newParty" onAction="#newPartyAction"
+                                          text="Новая партия"/>
+                                <MenuItem id="loadParty" onAction="#loadPartyAct" text="Загрузить..."/>
+                            </items>
+                        </Menu>
+                        <Menu mnemonicParsing="false" text="Edit">
+                            <items>
+                                <MenuItem id="showBoard" onAction="#showBoard" text="Доска"/>
+                            </items>
+                        </Menu>
+                        <Menu mnemonicParsing="false" text="Help">
+                            <items>
+                                <MenuItem id="showIAbout" onAction="#sendFigMoves" text="Ходы"/>
+                            </items>
+                        </Menu>
+                    </menus>
+                </MenuBar>
+                <TextArea id="textF" fx:id="textF" editable="false" layoutX="200.0" layoutY="25.0" prefHeight="375.0"
+                          prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                          AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="25.0">
+                    <font>
+                        <Font name="Ebrima" size="11.0"/>
+                    </font>
+                </TextArea>
+            </children>
+        </AnchorPane>
+    </children>
+</Group>

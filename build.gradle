@@ -6,20 +6,20 @@ plugins {
     id 'war'
 }
 group 'ru.vachok.pbem.chess'
-version('0.31')
-mainClassName = group + '.StartMePChess'
+version('0.40')
+mainClassName = group + '.FXApp'
 sourceCompatibility = 1.9
 sourceSets {
     main {
         resources {
             srcDirs = ["src/main/java", "src/main/resources"]
-            includes = ["**/*.fxml", "**/*.css", "**/*.properties", "**/*.png", "**/*.html", ".sql", "**/*.jar"]
+            includes = ["**/*.fxml", "**/*.css", "**/*.properties", "**/*.png", "**/*.jpg", "**/*.html", ".sql", "**/*.jar"]
         }
     }
     test {
         resources {
             srcDirs = ["src/test/java", "src/test/resources"]
-            includes = ["**/*.fxml", "**/*.css", "**/*.properties", "**/*.png", "**/*.jar"]
+            includes = ["**/*.fxml", "**/*.css", "**/*.properties", "**/*.png", "**/*.jpg", "**/*.jar"]
         }
     }
 }
@@ -57,7 +57,7 @@ jar {
     manifest {
         attributes(
                 'Main-Class': mainClassName,
-                'JavaFX-Version': 10,
+                'JavaFX-Version': 9,
                 'Class-Path': configurations.runtime.collect() { 'lib/' + it.name }.join('')
         )
     }

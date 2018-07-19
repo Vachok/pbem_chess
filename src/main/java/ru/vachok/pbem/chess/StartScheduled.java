@@ -1,7 +1,7 @@
 package ru.vachok.pbem.chess;
 
 
-import ru.vachok.messenger.MessageTelnet;
+import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.DbProperties;
 import ru.vachok.mysqlandprops.InitProperties;
@@ -27,9 +27,12 @@ public class StartScheduled implements Runnable {
     */
    private static final ScheduledExecutorService SCHEDULED_EXECUTOR_SERVICE = Executors.newScheduledThreadPool(30);
 
-   private static MessageToUser messageToUser = new MessageTelnet();
+   private static MessageToUser messageToUser = new MessageCons();
 
-   private InitProperties initProperties = new DbProperties(SOURCE_CLASS);
+   /**
+    * {@link DbProperties}
+    */
+   private InitProperties initProperties = new DbProperties(StartScheduled.SOURCE_CLASS);
 
    /**
     * Запускаемый поток
@@ -74,22 +77,14 @@ public class StartScheduled implements Runnable {
    }
 
    /**
-    * Запуск планировщика.
+    * @param timer true = запуск {@link TimerClass}
     */
-   private void checkPeriodically() {
-      ScheduledFuture schedule = StartScheduled.SCHEDULED_EXECUTOR_SERVICE.scheduleWithFixedDelay(new EChecker(), initial, period, TimeUnit.SECONDS);
-      ScheduledFuture count = SCHEDULED_EXECUTOR_SERVICE.scheduleWithFixedDelay(counter, initial, period, TimeUnit.SECONDS);
-      try{
-         count.get();
-         schedule.get();
+   public StartScheduled(boolean timer) {
+      if(timer){
+         Thread thread = new TimerClass("20 sec...", 20);
+         thread.start();
       }
-      catch(Exception e){
-         messageToUser.out("StartScheduled_96", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", " ")).getBytes());
-         messageToUser.errorAlert(SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
-      }
-      Runnable canceler = () -> schedule.cancel(false);
-      SCHEDULED_EXECUTOR_SERVICE.schedule(canceler, stopAfterMinutes, TimeUnit.MINUTES);
-
+      else{ throw new UnsupportedOperationException(StartScheduled.SOURCE_CLASS + " id 112"); }
    }
 
    /**
@@ -120,14 +115,24 @@ public class StartScheduled implements Runnable {
    }
 
    /**
-    * @param timer true = запуск {@link TimerClass}
+    * Запуск планировщика.
+    *
+    * @see EChecker
+    * @see TimerClass
     */
-   public StartScheduled(boolean timer) {
-      if(timer){
-         Thread thread = new TimerClass("20 sec...", 20);
-         thread.start();
+   private void checkPeriodically() {
+      ScheduledFuture schedule = StartScheduled.SCHEDULED_EXECUTOR_SERVICE.scheduleWithFixedDelay(new EChecker(""), initial, period, TimeUnit.SECONDS);
+      ScheduledFuture count = StartScheduled.SCHEDULED_EXECUTOR_SERVICE.scheduleWithFixedDelay(counter, initial, period, TimeUnit.SECONDS);
+      try{
+         count.get();
+         schedule.get();
       }
-      else{ throw new UnsupportedOperationException(SOURCE_CLASS + " id 112"); }
+      catch(Exception e){
+         StartScheduled.messageToUser.out("StartScheduled_96", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", " ")).getBytes());
+         StartScheduled.messageToUser.errorAlert(StartScheduled.SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
+      }
+      Runnable canceler = () -> schedule.cancel(false);
+      StartScheduled.SCHEDULED_EXECUTOR_SERVICE.schedule(canceler, stopAfterMinutes, TimeUnit.MINUTES);
    }
 
    /**
@@ -148,20 +153,22 @@ public class StartScheduled implements Runnable {
     * Запуск заданий {@link Future}
     */
    private void futureStart() {
-      ScheduledFuture schedule = SCHEDULED_EXECUTOR_SERVICE.scheduleWithFixedDelay(runMe, initial, period, TimeUnit.SECONDS);
+      ScheduledFuture schedule = StartScheduled.SCHEDULED_EXECUTOR_SERVICE.scheduleWithFixedDelay(runMe, 30, 40, TimeUnit.SECONDS);
       Thread timeR = new TimerClass(runMe.toString(), initial, ( int ) period);
       timeR.start();
       try{
          schedule.get();
       }
       catch(InterruptedException | ExecutionException e){
-         messageToUser.out("StartScheduled_105", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", " ")).getBytes());
-         messageToUser.errorAlert(SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
+         StartScheduled.messageToUser.out("StartScheduled_105", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", " ")).getBytes());
+         StartScheduled.messageToUser.errorAlert(StartScheduled.SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
          Thread.currentThread().interrupt();
       }
    }
 
-   /**Класс-таймер
+   /**
+    * Класс-таймер
+    *
     * @since 01.07.2018 (19:21)
     */
    class TimerClass extends Thread {
@@ -208,20 +215,22 @@ public class StartScheduled implements Runnable {
       }
    }
 
-   /**Названия сервисов.
+   /**
+    * Названия сервисов.
+    *
     * @see StartMePChess#noFX()
     * @since 21.06.2018 (19:22)
     */
    enum Services {
       EXIT,
-      EMAIL_SERVICES,
+      NEW_CHESS_BOARD,
       E_CHECKER,
       FTP_CHECKER;
 
 
       public static Map<Integer, String> getNames() {
          Map<Integer, String> servicesMap = new HashMap<>();
-         servicesMap.put(EMAIL_SERVICES.ordinal(), EMAIL_SERVICES.name());
+         servicesMap.put(NEW_CHESS_BOARD.ordinal(), NEW_CHESS_BOARD.name());
          servicesMap.put(E_CHECKER.ordinal(), E_CHECKER.name());
          servicesMap.put(FTP_CHECKER.ordinal(), FTP_CHECKER.name());
          return servicesMap;

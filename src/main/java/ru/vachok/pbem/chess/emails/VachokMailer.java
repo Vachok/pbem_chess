@@ -7,6 +7,7 @@ import ru.vachok.mysqlandprops.DbProperties;
 import ru.vachok.mysqlandprops.InitProperties;
 
 import javax.mail.Authenticator;
+import javax.mail.PasswordAuthentication;
 import javax.mail.Provider;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -25,16 +26,31 @@ import static javax.mail.Provider.Type.TRANSPORT;
  */
 public class VachokMailer implements Serializable, EmailsProviders {
 
+   /**
+    * @deprecated
+    */
+   @Deprecated (since = "15.07.2018 (20:45)", forRemoval = true)
    private static final long serialVersionUID = 1L;
 
+   /**
+    * @deprecated
+    */
+   @Deprecated (since = "15.07.2018 (20:46)", forRemoval = true)
    private String version = String.valueOf(serialVersionUID);
 
+   /**
+    * Тип {@link Provider}, для отправки
+    */
    private transient Provider.Type transport = TRANSPORT;
 
+   /**
+    * {@link MessageCons}
+    */
    private transient MessageToUser messageToUser = new MessageCons();
 
    /**
-    * Конструктор объекта.
+    * Установщик класса.
+    * {@link #chessMail()}
     */
    public VachokMailer() {
       this.chessMail();
@@ -50,13 +66,16 @@ public class VachokMailer implements Serializable, EmailsProviders {
             '}';
    }
 
-   /**
+   /**{@link #VachokMailer()}
+    * Сеттит {@link Provider}, для отправлений через хостинг.
+    *
+    *{@link #writeReplace()}
     * @return провайдер Reg.Ru (chess)
     */
    @Override
    public Provider chessMail() {
       String vendor = "Vachok";
-      String classname = "com.sun.getMailBin.smtp.SMTPTransport";
+      String className = "com.sun.getMailBin.smtp.SMTPTransport";
       String protocol = "smtps";
       try{
          writeReplace();
@@ -65,7 +84,7 @@ public class VachokMailer implements Serializable, EmailsProviders {
          messageToUser.out("RegRuMailer_62", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
          messageToUser.errorAlert("VachokMailer", e.getMessage(), Arrays.toString(e.getStackTrace()));
       }
-      return new Provider(transport, protocol, classname, vendor, version);
+      return new Provider(transport, protocol, className, vendor, version);
    }
 
    /**
@@ -81,7 +100,7 @@ public class VachokMailer implements Serializable, EmailsProviders {
 
    /**
     * Write replace object.
-    *
+
     * @throws IOException                the io exception
     */
    @SuppressWarnings ("WeakerAccess")
@@ -106,12 +125,18 @@ public class VachokMailer implements Serializable, EmailsProviders {
     * @see EChecker
     * @since 20.06.2018 (16:22)
     */
-   static class AuthForChess extends Authenticator {
+   public static class AuthForChess extends Authenticator {
 
       private static final String SOURCE_CLASS = AuthForChess.class.getSimpleName();
 
+      /**
+       * {@link MessageCons}
+       */
       private static MessageToUser messageToUser = new MessageCons();
 
+      /**
+       * {@link DbProperties}
+       */
       private static InitProperties initProperties = new DbProperties("SimpleEmailBinchess");
       @Override
       public String toString() {
@@ -122,6 +147,12 @@ public class VachokMailer implements Serializable, EmailsProviders {
                '}';
       }
 
+      /**
+       * Метод почтовой аутентификации
+       *
+       * @return {@link PasswordAuthentication} . Данные из {@link #initProperties}
+       * @see ESender
+       */
       @Override
       protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
          messageToUser.info(SOURCE_CLASS, "PasswordAuthentication", "STARTS...");

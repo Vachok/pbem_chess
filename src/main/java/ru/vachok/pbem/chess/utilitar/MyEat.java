@@ -11,6 +11,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+
+/**
+ * // todo 12.07.2018 (15:46)
+ */
 public interface MyEat {
 
     default Map<String, Double> fileRead() {

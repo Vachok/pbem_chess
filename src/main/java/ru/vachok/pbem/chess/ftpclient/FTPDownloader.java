@@ -3,8 +3,7 @@ package ru.vachok.pbem.chess.ftpclient;
 
 import org.apache.commons.net.ftp.FTPFile;
 
-
-/**
+/** //todo 15.07.2018 (0:07)
  * @since 03.07.2018 (22:57)
  */
 public class FTPDownloader implements Runnable, FtpConnect {
@@ -14,7 +13,14 @@ public class FTPDownloader implements Runnable, FtpConnect {
     */
    private static final String SOURCE_CLASS = FTPDownloader.class.getSimpleName();
 
-   private static final UnsupportedOperationException NOT_READY_YET = new UnsupportedOperationException("Not ready yet");
+   /**
+    * Сообщение о неготовности компонента
+    */
+   private static final UnsupportedOperationException NOT_READY_YET = new UnsupportedOperationException("Not ready yet 12.07.2018 (16:07) ");
+
+   /**
+    * 1. Стартовая точка
+    */
    @Override
    public void run() {
       throw FTPDownloader.NOT_READY_YET;
@@ -26,7 +32,7 @@ public class FTPDownloader implements Runnable, FtpConnect {
    }
 
    @Override
-   public FTPFile[] getFTPFiles() {
+   public FTPFile[] getWorkFolderName() {
       throw FTPDownloader.NOT_READY_YET;
    }
 }

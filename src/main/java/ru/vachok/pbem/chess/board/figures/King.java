@@ -1,54 +1,82 @@
 package ru.vachok.pbem.chess.board.figures;
 
 
-import ru.vachok.pbem.chess.board.ChessBoard;
+import ru.vachok.pbem.chess.board.ChessParty;
+
+import java.util.Collection;
+import java.util.Map;
 
 
 /**
  * @since 27.06.2018 (7:45)
  */
-public class King implements ChessBoard {
+public class King implements Figures {
 
    /**
     * Simple Name класса, для поиска настроек
     */
    private static final String SOURCE_CLASS = King.class.getSimpleName();
 
-   /**
-    * Цена фигуры
-    */
-   private static final int PRICE_FOR_GAME = 10000;
+   private static final long PARTY_ID = FigNamePrice.getPartyID();
+
+   private static final int FIG_PRICE = FigNamePrice.PRICE_KING;
+
 
    /**
-    * {@link #PRICE_FOR_GAME}
-    *
-    * @return цена
+    * @return цена фигуры
     */
-   static int getPriceForGame() {
-      return PRICE_FOR_GAME;
+   @Override
+   public int getPriceFor() {
+      return King.FIG_PRICE;
+   }
+
+   /**Получение ID ячейки на доске.
+    * @param partyID ID нужной партии
+    * @param cF буква-координата
+    * @param j цифра-координата
+    * @return int, idchessboard из базы
+    * {@link ChessParty#getInstance(long)}
+    */
+   @Override
+   public int getCellID(long partyID, Character cF, Integer j) {
+      ChessParty chessParty = ChessParty.getInstance(partyID);
+      int cellID = chessParty.getCellID("e".charAt(0), 4);
+      return cellID;
    }
 
    /**
-    * Сделать ход
+    * @param cellID {@link Collection} интов - куда можно пойти этойц фигурой
     */
    @Override
-   public void makeMove() {
+   public void calculateLegalMovies(Collection<String> cellID) {
 
    }
 
    /**
-    * "Съесть"
+    * @param moveFromCellID откуда ходим
+    * @param moveToCellID   куда ходим
+    * @return ID и название текущего положения фигуры
     */
    @Override
-   public void takeFigure() {
-
+   public Map<Integer, String> currentMovie(int moveFromCellID, int moveToCellID) {
+      return null;
    }
 
    /**
-    * Рассчёт следующего хода.
+    * @return состояние доски
     */
    @Override
-   public void calculateNext() {
+   public Map<Integer, String> call() {
+      return null;
+   }
 
+   /**
+    * @param color    цвет
+    * @param position начальное положение (left|right)
+    * @return имя фигуры
+    */
+   @Override
+   public String getFullName(String color, String position) {
+      return null;
    }
 }

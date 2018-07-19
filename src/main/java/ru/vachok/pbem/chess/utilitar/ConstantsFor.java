@@ -3,9 +3,14 @@ package ru.vachok.pbem.chess.utilitar;
 
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.mysqlandprops.A161Mysql;
+import ru.vachok.mysqlandprops.DataConnectTo;
+import ru.vachok.mysqlandprops.RegRuMysql;
+import ru.vachok.pbem.chess.emails.EChecker;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.URL;
 import java.util.Arrays;
 
 
@@ -47,9 +52,13 @@ public enum ConstantsFor {
 
    /**
     * Название кодировки
+    *
     */
    public static final String UTF_8 = "UTF-8";
 
+   /**
+    * 1 килобайт
+    */
    public static final int KILOBYTE = 1024 * 1024;
 
    /**
@@ -57,7 +66,25 @@ public enum ConstantsFor {
     */
    public static final String W1251 = "Windows-1251";
 
-   private static InetAddress vachokRu;
+   /**
+    * Color Figure
+    */
+   public static final String BLACK = "BLACK";
+
+   /**
+    * Запрос для получения содержимого сайта из {@link URL}
+    *
+    * @see EChecker
+    */
+   public static final String GETTOME = "gettome:";
+
+   public static final UnsupportedOperationException NOT_READY = new UnsupportedOperationException("NOT READY, Sorry...");
+
+   public static final DataConnectTo DATA_CONNECT_TO_REG = new RegRuMysql();
+
+   public static final DataConnectTo DATA_CONNECT_TO_A161 = new A161Mysql("testb");
+
+   public static DecoderEnc decoderEncUtf8 = new UTF8();
 
    /**
     * Доступность <a href="http://www.vachok.ru" target=_blank></a>
@@ -75,7 +102,7 @@ public enum ConstantsFor {
 
    static {
       try{
-         vachokRu = InetAddress.getByName("vachok.ru");
+         InetAddress vachokRu = InetAddress.getByName("vachok.ru");
          regIsOk = vachokRu.isReachable(TIMEOUT_1000);
       }
       catch(IOException e){
@@ -84,22 +111,11 @@ public enum ConstantsFor {
          messageToUser.errorAlert("ConstantsFor", e.getMessage(), Arrays.toString(e.getStackTrace()));
       }
    }
-
    /**
-    * Вместо {@code toString}...
-    *
-    * @return строка "типа" {@code toString}
+    * @return строка в помощью по-программе.
     */
-   public static String con() {
-      return "ConstantsFor{" +
-            "OK=" + OK +
-            ", regIsOk=" + regIsOk +
-            ", TIMEOUT_1000=" + TIMEOUT_1000 +
-            ", vachokRu=" + vachokRu +
-            '}';
-   }
-
    public static String help() {
-      return Utilit.toUTF("а тут могла выть ваша...");
+      decoderEncUtf8.toAnotherEnc("Хуйня, ващэ хуйня!");
+      throw NOT_READY;
    }
 }

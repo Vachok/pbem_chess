@@ -10,10 +10,16 @@ import java.io.IOException;
 import java.util.Arrays;
 
 
+/**
+ * интерфейс взаимодействия
+ *
+ * @since 11.07.2018 (20:02)
+ */
 public interface FtpConnect {
 
-   void connect();
-
+   /**
+    * @return {@link FTPClient}, с нужными настройками.
+    */
    default FTPClient getClient() {
       MessageToUser messageToUser = new MessageCons();
       FTPClient ftpClient = new FTPClient();
@@ -31,5 +37,13 @@ public interface FtpConnect {
       return ftpClient;
    }
 
-   FTPFile[] getFTPFiles();
+   /**
+    * @return массив файлов на FTP-сервере.
+    */
+   FTPFile[] getWorkFolderName();
+
+   /**
+    * Соединиться с сервером
+    */
+   void connect();
 }
