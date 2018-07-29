@@ -4,143 +4,102 @@ package ru.vachok.pbem.chess;
 import javafx.concurrent.Task;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.DbProperties;
-import ru.vachok.mysqlandprops.InitProperties;
-import ru.vachok.pbem.chess.board.GamesPosBegin;
-import ru.vachok.pbem.chess.board.PosinionNow;
-import ru.vachok.pbem.chess.emails.EChecker;
-import ru.vachok.pbem.chess.emails.ESender;
+import ru.vachok.mysqlandprops.props.DBRegProperties;
+import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.pbem.chess.ftpclient.FtpHomeCamCheck;
-import ru.vachok.pbem.chess.utilitar.DecoderEnc;
-import ru.vachok.pbem.chess.utilitar.UTF8;
-import ru.vachok.pbem.chess.utilitar.Utilit;
+import ru.vachok.pbem.chess.utilitar.*;
 import ru.vachok.pbem.chess.vrtx.VrtClientJDBC;
 
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static ru.vachok.pbem.chess.utilitar.Utilit.toUTF;
-
 
 /**
- * <b>Стартовый консольный класс</b>
- * <p>
- * <a href="http://chess.vachok.ru/" target=_blank>Gradle SCAN</a>
- *
- * @since 19.06.2018 (21:29)
- */
-public class StartMePChess extends Task<Class<Void>> {
+ <b>Стартовый консольный класс</b>
+ <p>
+ <a href="http://chess.vachok.ru/" target=_blank>Gradle SCAN</a>
+
+ @since 19.06.2018 (21:29) */
+public class StartMePChess extends Task<String> {
+
 
    /**
-    * Class Simple Name
+    Class Simple Name
     */
    private static final String SOURCE_CLASS = StartMePChess.class.getSimpleName();
 
-   /**
-    */
-   private static InitProperties initProperties = new DbProperties(SOURCE_CLASS);
 
    /**
-    * Общение с пользователем.
-    * {@link MessageToUser}
     */
-   private static MessageToUser messageToUser = new MessageCons();
-
-   private static DecoderEnc decoderEnc = new UTF8();
-   /**
-    * {@link VrtClientJDBC}
-    */
-   private static VrtClientJDBC vrtClientJDBC = new VrtClientJDBC();
+   private static final InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + SOURCE_CLASS);
 
    /**
-    * Ответ юзера, для дальнейшей работы.
+    Общение с пользователем.
+    {@link MessageToUser}
     */
-   private Integer userAnswer;
+   private static final MessageToUser messageToUser = new MessageCons();
+
 
    /**
-    * Запуск новой партии. Создание таблицы в БД, присвоение ID {@link System#currentTimeMillis()} ,
-    * отправка почты.
-    *
-    * @see GamesPosBegin
+    {@link UTF8}
     */
-   private Runnable oneNewParty = () -> {
-      long l = System.currentTimeMillis();
-      List<String> rcpt = new ArrayList<>();
-      Callable<Long> partyID = () -> GamesPosBegin.getInst().call();
-      Callable<Map<Integer, String>> positionNow = PosinionNow.getInstance(l);
-      ExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-      executorService.submit(partyID);
-      Future<Map<Integer, String>> mapFuture = executorService.submit(positionNow);
-      try{
-         String s = mapFuture.get().toString();
-         StartMePChess.messageToUser.infoNoTitles(s);
-         rcpt.add("143500@gmail.com");
-         rcpt.add("olga-barchi@yandex.ru");
-         rcpt.add("o.barchuk84@gmail.com");
-         ESender.sendM(rcpt, "Play WITH ME... " + l, s.replaceAll(", ", "\n"));
-      }
-      catch(InterruptedException | ExecutionException e){
-         StartMePChess.messageToUser.errorAlert(StartMePChess.SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
-         Thread.currentThread().interrupt();
-      }
-   };
+   private static final DecoderEnc UTF_8 = new UTF8();
 
    /**
-    * Конструктор по-умолчанию.
-    *
-    * @param userAnswer что делать дальше. {@link #doNext(Integer)}
+    {@link VrtClientJDBC}
+    */
+   private static final VrtClientJDBC vrtClientJDBC = new VrtClientJDBC();
+
+   /**
+    Ответ юзера, для дальнейшей работы.
+    */
+   private final Integer userAnswer;
+
+
+   /**
+    Конструктор по-умолчанию.
+
+    @param userAnswer что делать дальше. {@link #doNext(Integer)}
     */
    public StartMePChess(Integer userAnswer) {
       this.userAnswer = userAnswer;
    }
 
    /**
-    * <b>PRIVATE</b>
+    <b>PRIVATE</b>
     */
    private StartMePChess() {
+      throw new UnsupportedOperationException("25.07.2018 (9:28) "+ SOURCE_CLASS+".private constructor");
    }
 
    /**
-    * 1.Старт
-    * 1.1 {@link #call()}
+    1.Старт
+    1.1 {@link #call()}
     */
    @Override
    public void run() {
-      call();
-   }
-
-   /**
-    * {@link #run()}
-    *
-    * @return {@link Void#TYPE}
-    */
-   @Override
-   protected Class<Void> call() {
       doNext(userAnswer);
-      return Void.TYPE;
    }
-
    /**
-    * {@link FXApp#main(java.lang.String[])}
-    * Консольная версия приложения.
-    * <p>
-    * <b><i>Задаёт юзеру вопрос.</i></b> Запускает
-    * {@link #doNext(Integer)}
-    *
-    * @see FtpHomeCamCheck
-    * @see StartScheduled
-    * @see EChecker
-    * @see VrtClientJDBC
+    {@link FXApp#main(java.lang.String[])}
+    Консольная версия приложения.
+    <p>
+    <b><i>Задаёт юзеру вопрос.</i></b> Запускает
+    {@link #doNext(Integer)}
+
+    @see FtpHomeCamCheck
+    @see StartScheduled
     */
    static void noFX() {
       Properties properties = initProperties.getProps();
-      messageToUser.info(SOURCE_CLASS, properties.toString(), decoderEnc.toAnotherEnc(new Utilit().checkTime()));
+      messageToUser.info(SOURCE_CLASS, properties.toString(), UTF_8.toAnotherEnc(new Utilit().checkTime()));
       Scanner scanner = new Scanner(System.in);
       Integer userAnswer = 0;
       Map<Integer, String> names = StartScheduled.Services.getNames();
-      messageToUser.infoNoTitles(toUTF("Введите имя сервиса:\n" + names.toString().replaceAll(", ", "\n")));
+      messageToUser.infoNoTitles(UTF_8.toAnotherEnc("Введите имя сервиса:\n" + names.toString().replaceAll(", ", "\n")));
       while(scanner.hasNextInt()){
          userAnswer = scanner.nextInt();
          doNext(userAnswer);
@@ -148,35 +107,20 @@ public class StartMePChess extends Task<Class<Void>> {
    }
 
    /**
-    * @return {@link #oneNewParty}
+    {@link #noFX()}
+    Запускает что-либо в зависимости от выбора
+    <p>
+    {@link #userAnswer} == 0, {@link System#exit(int)} <b>status 0</b>.
+    {@link UserAns} - класс-стартер.
+    @param userAnswer ответ пользователя на вопрос что запускать.
+    @see FtpHomeCamCheck
     */
-   private Runnable getOneNewParty() {
-      return oneNewParty;
-   }
-
-   /**
-    * {@link #call()} ; {@link #noFX()}
-    * Запускает что-либо в зависимости от выбора
-    *
-    * @param userAnswer ответ пользователя на вопрос что запускать.
-    * @see StartScheduled
-    * @see FtpHomeCamCheck
-    * @see EChecker
-    */
-   static void doNext(Integer userAnswer) {
-      if(userAnswer==3){
-         Runnable runnable = new StartScheduled(new FtpHomeCamCheck(), 90);
-         runnable.run();
-      }
-      if(userAnswer==2){
-         Runnable runnable = new StartScheduled();
-         runnable.run();
-      }
-      if(userAnswer==1){
-         Runnable runnable = new StartMePChess().getOneNewParty();
-         ExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-         executorService.execute(runnable);
-      }
+   static String doNext(Integer userAnswer) {
+      if(userAnswer==5) UserAns.ansFive();
+      if(userAnswer==4) UserAns.ansFour();
+      if(userAnswer==3) UserAns.ansThree();
+      if(userAnswer==2) UserAns.ansTwo();
+      if(userAnswer==1) UserAns.ansOne();
       if(userAnswer==0) System.exit(0);
       String s = "mailToString";
       String s1 = vrtClientJDBC.toString();
@@ -186,5 +130,13 @@ public class StartMePChess extends Task<Class<Void>> {
          while(m.find()) s = m.group();
          messageToUser.confirm(SOURCE_CLASS, "The Move = " + s, "OK? " + s1);
       }
+      return s;
+   }
+   /**
+    @return {@link #SOURCE_CLASS}
+    */
+   @Override
+   protected String call() {
+      return SOURCE_CLASS;
    }
 }

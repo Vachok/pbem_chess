@@ -6,9 +6,11 @@ import org.apache.commons.mail.Email;
 import org.apache.commons.mail.EmailException;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.DbProperties;
-import ru.vachok.mysqlandprops.FileProps;
-import ru.vachok.mysqlandprops.InitProperties;
+import ru.vachok.mysqlandprops.DataConnectTo;
+import ru.vachok.mysqlandprops.RegRuMysql;
+import ru.vachok.mysqlandprops.props.DBRegProperties;
+import ru.vachok.mysqlandprops.props.FileProps;
+import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.pbem.chess.utilitar.ConstantsFor;
 import ru.vachok.pbem.chess.utilitar.DecoderEnc;
 import ru.vachok.pbem.chess.utilitar.UTF8;
@@ -20,6 +22,10 @@ import javax.mail.Session;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -38,7 +44,7 @@ public class ESender extends Task<Boolean> implements Runnable, EMailsChess {
     */
    private static final String SOURCE_CLASS = ESender.class.getSimpleName();
 
-   private static MessageToUser messageToUser = new MessageCons();
+   private static final MessageToUser messageToUser = new MessageCons();
 
    /**
     * Аутентификатор и настройка провайдера почты.
@@ -46,9 +52,13 @@ public class ESender extends Task<Boolean> implements Runnable, EMailsChess {
     *
     * @see VachokMailer
     */
-   private static EmailsProviders p = new VachokMailer();
+   private static final EmailsProviders p = new VachokMailer();
 
-   private DecoderEnc decoderEnc = new UTF8();
+   private final DecoderEnc decoderEnc = new UTF8();
+
+   private static final DataConnectTo DATA_CONNECT_TO = new RegRuMysql();
+
+   private static final Connection u0466446_chess = DATA_CONNECT_TO.getDefaultConnection("u0466446_chess");
 
    /**
     * {@link List} получателей
@@ -119,6 +129,20 @@ public class ESender extends Task<Boolean> implements Runnable, EMailsChess {
       return null;
    }
 
+   public static long getPartyID() {
+      try(PreparedStatement ps = u0466446_chess.prepareStatement("select partyid from chessid");
+          ResultSet r = ps.executeQuery()){
+         while(r.next()){
+            if(r.last()) return r.getLong("partyid");
+         }
+      }
+      catch(SQLException e){
+         messageToUser.errorAlert(SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
+         throw new UnknownError();
+      }
+      throw new NullPointerException();
+   }
+
    /**
     * {@link #ESender(List, String, String, URL)}
     * Отправка запрошенного URL
@@ -128,7 +152,7 @@ public class ESender extends Task<Boolean> implements Runnable, EMailsChess {
     */
    void sendURL(URL url) {
       subj = "GETTOME (URL4U" + LocalDateTime.now().toString() + ")";
-      byte[] pageBytes = new byte[ConstantsFor.MEGABYTE];
+      byte[] pageBytes = new byte[ConstantsFor.GIGABYTE];
       try(InputStream openStreamURL = orderURL.openStream()){
          pageBytes = openStreamURL.readAllBytes();
       }
@@ -136,7 +160,7 @@ public class ESender extends Task<Boolean> implements Runnable, EMailsChess {
          ESender.messageToUser.out("ESender_50", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", " ")).getBytes());
          ESender.messageToUser.errorAlert("ESender", e.getMessage(), Arrays.toString(e.getStackTrace()));
       }
-      this.msg = decoderEnc.toAnotherFromBytes(pageBytes);
+      this.msg = decoderEnc.toAnotherEnc(pageBytes);
       sendMail();
    }
 
@@ -147,7 +171,7 @@ public class ESender extends Task<Boolean> implements Runnable, EMailsChess {
     * @see VachokMailer#chessMail()
     */
    private boolean sendMail() {
-      InitProperties initPr = new DbProperties("mailP");
+      InitProperties initPr = new DBRegProperties("general-mailP");
       Properties mailP = initPr.getProps();
       Authenticator authenticator = new VachokMailer.AuthForChess();
       (( VachokMailer.AuthForChess ) authenticator).getPasswordAuthentication();
@@ -186,7 +210,7 @@ public class ESender extends Task<Boolean> implements Runnable, EMailsChess {
     * @param msg  {@link #msg}
     */
    public static void sendM(List<String> rcpt, String subj, String msg) {
-      InitProperties initPr = new DbProperties("mailP");
+      InitProperties initPr = new DBRegProperties("general-mailP");
       Properties mailP = initPr.getProps();
       Authenticator authenticator = new VachokMailer.AuthForChess();
       (( VachokMailer.AuthForChess ) authenticator).getPasswordAuthentication();

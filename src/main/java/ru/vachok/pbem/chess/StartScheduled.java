@@ -3,8 +3,8 @@ package ru.vachok.pbem.chess;
 
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.DbProperties;
-import ru.vachok.mysqlandprops.InitProperties;
+import ru.vachok.mysqlandprops.props.DBRegProperties;
+import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.pbem.chess.emails.EChecker;
 import ru.vachok.pbem.chess.utilitar.ConstantsFor;
 
@@ -27,12 +27,17 @@ public class StartScheduled implements Runnable {
     */
    private static final ScheduledExecutorService SCHEDULED_EXECUTOR_SERVICE = Executors.newScheduledThreadPool(30);
 
-   private static MessageToUser messageToUser = new MessageCons();
+   private static final MessageToUser MESSAGE_CONS = new MessageCons();
 
    /**
-    * {@link DbProperties}
+    Поле в БД
     */
-   private InitProperties initProperties = new DbProperties(StartScheduled.SOURCE_CLASS);
+   private static final String STOP_AFTER_MINUTES = "stopAfterMinutes";
+
+   /**
+    * {@link DBRegProperties}
+    */
+   private final InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + SOURCE_CLASS);
 
    /**
     * Запускаемый поток
@@ -60,6 +65,8 @@ public class StartScheduled implements Runnable {
     * @see TimerClass
     */
    private Runnable counter;
+
+   private final MessageToUser messageToUser = new MessageCons();
 
 
    /**
@@ -92,11 +99,11 @@ public class StartScheduled implements Runnable {
     * <p>
     * Берет параметры из БД.
     *
-    * @see DbProperties
+    * @see DBRegProperties
     */
    public StartScheduled() {
       Properties properties = initProperties.getProps();
-      this.stopAfterMinutes = Integer.parseInt(properties.getProperty("stopAfterMinutes"));
+      this.stopAfterMinutes = Integer.parseInt(properties.getProperty(STOP_AFTER_MINUTES));
       this.period = Long.parseLong(properties.getProperty("period"));
       this.initial = Long.parseLong(properties.getProperty("initial"));
       this.counter = new TimerClass(runMe.toString(), period);
@@ -117,7 +124,6 @@ public class StartScheduled implements Runnable {
    /**
     * Запуск планировщика.
     *
-    * @see EChecker
     * @see TimerClass
     */
    private void checkPeriodically() {
@@ -128,8 +134,8 @@ public class StartScheduled implements Runnable {
          schedule.get();
       }
       catch(Exception e){
-         StartScheduled.messageToUser.out("StartScheduled_96", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", " ")).getBytes());
-         StartScheduled.messageToUser.errorAlert(StartScheduled.SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
+         StartScheduled.MESSAGE_CONS.out("StartScheduled_96", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", " ")).getBytes());
+         StartScheduled.MESSAGE_CONS.errorAlert(StartScheduled.SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
       }
       Runnable canceler = () -> schedule.cancel(false);
       StartScheduled.SCHEDULED_EXECUTOR_SERVICE.schedule(canceler, stopAfterMinutes, TimeUnit.MINUTES);
@@ -142,7 +148,7 @@ public class StartScheduled implements Runnable {
    @Override
    public void run() {
       Properties properties = initProperties.getProps();
-      this.stopAfterMinutes = Integer.parseInt(properties.getProperty("stopAfterMinutes"));
+      this.stopAfterMinutes = Integer.parseInt(properties.getProperty(STOP_AFTER_MINUTES));
       this.period = Long.parseLong(properties.getProperty("period"));
       this.initial = Long.parseLong(properties.getProperty("initial"));
       futureStart();
@@ -157,11 +163,13 @@ public class StartScheduled implements Runnable {
       Thread timeR = new TimerClass(runMe.toString(), initial, ( int ) period);
       timeR.start();
       try{
-         schedule.get();
+         Thread.currentThread().setName(this.getClass().getSimpleName() + ".futureStart");
+         Object o = schedule.get();
+         messageToUser.info(SOURCE_CLASS, Thread.currentThread().getName(), o.toString());
       }
       catch(InterruptedException | ExecutionException e){
-         StartScheduled.messageToUser.out("StartScheduled_105", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", " ")).getBytes());
-         StartScheduled.messageToUser.errorAlert(StartScheduled.SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
+         StartScheduled.MESSAGE_CONS.out("StartScheduled_105", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", " ")).getBytes());
+         StartScheduled.MESSAGE_CONS.errorAlert(StartScheduled.SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
          Thread.currentThread().interrupt();
       }
    }
@@ -173,7 +181,7 @@ public class StartScheduled implements Runnable {
     */
    class TimerClass extends Thread {
 
-      private long timeFromInSeconds;
+      private final long timeFromInSeconds;
 
       private String processName;
 
@@ -182,7 +190,7 @@ public class StartScheduled implements Runnable {
       TimerClass(String s, long period) {
          this.processName = s;
          this.timeFromInSeconds = period;
-         this.stopAfterInMin = Long.parseLong(new DbProperties("StartScheduled").getProps().getProperty("stopAfterMinutes"));
+         this.stopAfterInMin = Long.parseLong(new DBRegProperties(ConstantsFor.APP_NAME + SOURCE_CLASS).getProps().getProperty(STOP_AFTER_MINUTES));
       }
 
       TimerClass(String processName, long timeFromInSeconds, int stopAfterInMin) {
@@ -205,7 +213,7 @@ public class StartScheduled implements Runnable {
          for(int i = 0; i < timeFromInSeconds; i++){
             try{
                String s = "SCHEDULED: " + processName + "\n init " + (timeFromInSeconds - i) + "sec. \nstop after " + (stopAfterInMin - TimeUnit.SECONDS.toMinutes(i)) + " min.";
-               System.out.println(s);
+               ConstantsFor.MESSAGE_LOG.infoNoTitles(s);
                Thread.sleep(ConstantsFor.TIMEOUT_1000);
             }
             catch(InterruptedException e){
@@ -228,6 +236,11 @@ public class StartScheduled implements Runnable {
       FTP_CHECKER;
 
 
+      /**
+       {@link StartMePChess#noFX()}
+
+       @return {@link Map}, где ключ - порядковый номер, а значение имя.
+       */
       public static Map<Integer, String> getNames() {
          Map<Integer, String> servicesMap = new HashMap<>();
          servicesMap.put(NEW_CHESS_BOARD.ordinal(), NEW_CHESS_BOARD.name());

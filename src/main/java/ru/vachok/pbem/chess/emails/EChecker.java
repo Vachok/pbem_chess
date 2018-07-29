@@ -5,9 +5,9 @@ import org.apache.commons.io.FileUtils;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.DataConnectTo;
-import ru.vachok.mysqlandprops.DbProperties;
-import ru.vachok.mysqlandprops.InitProperties;
 import ru.vachok.mysqlandprops.RegRuMysql;
+import ru.vachok.mysqlandprops.props.DbProperties;
+import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.pbem.chess.StartScheduled;
 import ru.vachok.pbem.chess.utilitar.ConstantsFor;
 import ru.vachok.pbem.chess.utilitar.Utilit;
@@ -30,57 +30,59 @@ import java.util.regex.Pattern;
 
 
 /**
- * Проверка почтового ящика.
- *
- * @see EMailsChess
- * @since 20.06.2018 (11:43)
- * @deprecated
- */
+ Проверка почтового ящика.
+
+ @see EMailsChess
+ @since 20.06.2018 (11:43)
+ @deprecated  */
 @Deprecated (since = "17.07.2018 (20:19)")
 public class EChecker implements Runnable, Callable<Map<String, String>> {
 
    /**
-    * Simple Name класса, для поиска настроек
+    Simple Name класса, для поиска настроек
     */
    private static final String SOURCE_CLASS = EChecker.class.getSimpleName();
 
    /**
-    * {@link MessageCons}
+    {@link MessageCons}
     */
-   private static MessageToUser messageToUser = new MessageCons();
+   private static final MessageToUser messageToUser = new MessageCons();
 
    /**
-    * {@link RegRuMysql}
+    {@link RegRuMysql}
     */
-   private static DataConnectTo dataConnectTo = new RegRuMysql();
+   private static final DataConnectTo dataConnectTo = new RegRuMysql();
 
    /**
-    * Адреса получателей
-    * {@link #run()}
+    Адреса получателей
+    {@link #run()}
     */
-   private static List<String> rcpt = new ArrayList<>();
+   private static final List<String> rcpt = new ArrayList<>();
 
    /**
-    * Сообщения из ящика
-    * {@link #getPOP3MessagesMap()}
+    Сообщения из ящика
+    {@link #getPOP3MessagesMap()}
     */
    private Map<String, String> mailS = new ConcurrentHashMap<>();
 
    /**
-    * Тема сообщения
+    Тема сообщения
     */
-   private String subj;
+   private final String subj;
 
-   /** {@link #subj}
-    * @param subj {@link StartScheduled#checkPeriodically()}
+   /**
+    {@link #subj}
+
+    @param subj {@link StartScheduled#checkPeriodically()}
     */
    public EChecker(String subj) {
       this.subj = subj;
    }
 
-   /**Вызов проверки ящика. {@link StartScheduled#checkPeriodically()}
-    * @return {@link #getPOP3MessagesMap()}
-    *
+   /**
+    Вызов проверки ящика. {@link StartScheduled#checkPeriodically()}
+
+    @return {@link #getPOP3MessagesMap()}
     */
    @Override
    public Map<String, String> call() {
@@ -103,10 +105,10 @@ public class EChecker implements Runnable, Callable<Map<String, String>> {
    }
 
    /**
-    * {@link #call()} ; {@link #run()}
-    * Получает сообщения из REG
-    *
-    * @return {@link Map} с сообщениями на сервере.
+    {@link #call()} ; {@link #run()}
+    Получает сообщения из REG
+
+    @return {@link Map} с сообщениями на сервере.
     */
    private Map<String, String> getPOP3MessagesMap() {
       InitProperties initProperties = new DbProperties("mailP");
@@ -123,18 +125,17 @@ public class EChecker implements Runnable, Callable<Map<String, String>> {
          Folder inBox = store.getFolder("Inbox");
          inBox.open(Folder.READ_ONLY);
          Message[] mailSMessages = inBox.getMessages();
-         synchronized(mailSMessages) {
-            for(Message mailSMessage : mailSMessages){
-               File file = new File("mes\\" + mailSMessage.getMessageNumber() + ".eem");
-               InputStream inputStreamM = mailSMessage.getInputStream();
-               byte[] bytes = inputStreamM.readAllBytes();
-               String msg = LocalDateTime.now() + "\n" + mailSMessage.getSentDate().toString() + "\nFrom STREAM-bytes is: " + bytes.length + "\n" + new String(bytes);
-               String key = "Message number " + mailSMessage.getMessageNumber() + "_" + System.currentTimeMillis() + ".\n\n" + "SUBJECT : " + mailSMessage.getSubject() + ";";
-               mailS.put(key, msg);
-               FileUtils.writeStringToFile(file, key + "\n MESSAGE: " + msg, "UTF-8");
-               notifyAll();
-            }
+
+         for(Message mailSMessage : mailSMessages){
+            File file = new File("mes\\" + mailSMessage.getMessageNumber() + ".eem");
+            InputStream inputStreamM = mailSMessage.getInputStream();
+            byte[] bytes = inputStreamM.readAllBytes();
+            String msg = LocalDateTime.now() + "\n" + mailSMessage.getSentDate().toString() + "\nFrom STREAM-bytes is: " + bytes.length + "\n" + new String(bytes);
+            String key = "Message number " + mailSMessage.getMessageNumber() + "_" + System.currentTimeMillis() + ".\n\n" + "SUBJECT : " + mailSMessage.getSubject() + ";";
+            mailS.put(key, msg);
+            FileUtils.writeStringToFile(file, key + "\n MESSAGE: " + msg, "UTF-8");
          }
+
       }
       catch(IOException | NoSuchElementException | MessagingException e){
          EChecker.messageToUser.out("EChecker_116", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
@@ -144,15 +145,15 @@ public class EChecker implements Runnable, Callable<Map<String, String>> {
    }
 
    /**
-    * When an object implementing interface <code>Runnable</code> is used
-    * to create a thread, starting the thread causes the object'GETTOME
-    * <code>run</code> method to be called in that separately executing
-    * thread.
-    * <p>
-    * The general contract of the method <code>run</code> is that it may
-    * take any action whatsoever.
-    *
-    * @see Thread#run()
+    When an object implementing interface <code>Runnable</code> is used
+    to create a thread, starting the thread causes the object'GETTOME
+    <code>run</code> method to be called in that separately executing
+    thread.
+    <p>
+    The general contract of the method <code>run</code> is that it may
+    take any action whatsoever.
+
+    @see Thread#run()
     */
    @Override
    public void run() {
@@ -165,12 +166,12 @@ public class EChecker implements Runnable, Callable<Map<String, String>> {
    }
 
    /**
-    * {@link #run()}
-    * Парсит {@link ConstantsFor#GETTOME} строку.
-    * {@link #sendResultToDatabase(String)}
-    *
-    * @param getToMeSting строка из почтового сообщения.
-    * @see ESender#sendURL(URL)
+    {@link #run()}
+    Парсит {@link ConstantsFor#GETTOME} строку.
+    {@link #sendResultToDatabase(String)}
+
+    @param getToMeSting строка из почтового сообщения.
+    @see ESender#sendURL(URL)
     */
    private void getUrlAddress(String getToMeSting) {
       String[] sS = getToMeSting.split(ConstantsFor.GETTOME);
@@ -198,9 +199,11 @@ public class EChecker implements Runnable, Callable<Map<String, String>> {
       sendResultToDatabase(getToMeSting);
    }
 
-   /** Отправка результатов парсинга в БД
-    * @param urlParseResult {@link #getUrlAddress(String)}
-    * @see EChecker#dataConnectTo
+   /**
+    Отправка результатов парсинга в БД
+
+    @param urlParseResult {@link #getUrlAddress(String)}
+    @see EChecker#dataConnectTo
     */
    private void sendResultToDatabase(String urlParseResult) {
       String sql = "insert into rez (rez, pc) values (?,?)";

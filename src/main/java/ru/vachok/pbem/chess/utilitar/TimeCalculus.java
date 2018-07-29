@@ -3,9 +3,10 @@ package ru.vachok.pbem.chess.utilitar;
 
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.DbProperties;
-import ru.vachok.mysqlandprops.FileProps;
-import ru.vachok.mysqlandprops.InitProperties;
+import ru.vachok.mysqlandprops.props.DBRegProperties;
+import ru.vachok.mysqlandprops.props.DbProperties;
+import ru.vachok.mysqlandprops.props.FileProps;
+import ru.vachok.mysqlandprops.props.InitProperties;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -39,16 +40,16 @@ public class TimeCalculus {
     *
     * @see MessageToUser
     */
-   private static MessageToUser messageToUser = new MessageCons();
+   private static final MessageToUser messageToUser = new MessageCons();
 
    /**
     * {@link Properties}
     *
     * @see DbProperties
     */
-   private InitProperties initProperties = new DbProperties(SOURCE_CLASS);
+   private InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME+SOURCE_CLASS);
 
-   private Properties properties = initProperties.getProps();
+   private final Properties properties = initProperties.getProps();
 
 
    /**

@@ -33,12 +33,12 @@ public class VisualBoardFX implements Runnable {
     */
    private static final String SOURCE_CLASS = VisualBoardFX.class.getSimpleName();
 
-   private MessageToUser messageToUser = new MessageFX();
+   private final MessageToUser messageToUser = new MessageFX();
 
    /**
     * {@link FXApp}
     */
-   private Stage boardStage;
+   private final Stage boardStage;
 
    @FXML
    private ImageView imageV;

@@ -6,9 +6,10 @@ import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.SimpleEmail;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.DbProperties;
-import ru.vachok.mysqlandprops.FileProps;
-import ru.vachok.mysqlandprops.InitProperties;
+import ru.vachok.mysqlandprops.props.DBRegProperties;
+import ru.vachok.mysqlandprops.props.DbProperties;
+import ru.vachok.mysqlandprops.props.FileProps;
+import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.pbem.chess.utilitar.ConstantsFor;
 import ru.vachok.pbem.chess.utilitar.Utilit;
 
@@ -23,8 +24,6 @@ import java.util.*;
  * Created by 14350 on 21.06.2018 19:07
  */
 public class SimpleEmailREG extends Email implements Serializable {
-
-   private static final String SOURCE_CLASS = SimpleEmailREG.class.getSimpleName();
 
    private static final long serialVersionUID = 2L;
 
@@ -54,7 +53,7 @@ public class SimpleEmailREG extends Email implements Serializable {
     * @param msg   сообщение
     */
    SimpleEmailREG(Collection<String> recep, String subj, String msg) {
-      InitProperties initProperties = new DbProperties("mailP");
+      InitProperties initProperties = new DBRegProperties("general-mailP");
       Properties mailP = initProperties.getProps();
 
       this.msg = msg;
@@ -67,7 +66,7 @@ public class SimpleEmailREG extends Email implements Serializable {
          messageToUser.out("SimpleEmailBin_98", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
          messageToUser.errorAlert("SimpleEmailREG", e.getMessage(), Arrays.toString(e.getStackTrace()));
       }
-      initProperties = new DbProperties("chess");
+      initProperties = new DBRegProperties("general-chess");
       mailP = initProperties.getProps();
       String u = mailP.getProperty("userName");
       String p = mailP.getProperty("pass");

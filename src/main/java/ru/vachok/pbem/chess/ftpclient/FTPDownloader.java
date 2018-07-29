@@ -28,7 +28,7 @@ public class FTPDownloader implements Runnable, FtpConnect {
    }
 
    @Override
-   public void connect() {
+   public String connect() {
       throw FTPDownloader.NOT_READY_YET;
    }
 

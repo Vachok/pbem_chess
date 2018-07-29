@@ -18,7 +18,7 @@ public class WinCP implements DecoderEnc {
     */
    private static final String SOURCE_CLASS = WinCP.class.getSimpleName();
 
-   private MessageToUser messageToUser = new MessageCons();
+   private final MessageToUser messageToUser = new MessageCons();
 
    @Override
    public String toAnotherEnc(String stringForDecode) {
@@ -31,10 +31,16 @@ public class WinCP implements DecoderEnc {
       throw new UnsupportedOperationException("...");
    }
 
+   /**
+    Конвертер в CP-1251.
+
+    @param bytes
+    @return нужная строка в нужной кодировке
+    */
    @Override
-   public String toAnotherFromBytes(byte[] strBytes) {
+   public String toAnotherEnc(byte[] bytes) {
       try{
-         return new String(strBytes, "Windows-1251");
+         return new String(bytes, "Windows-1251");
       }
       catch(UnsupportedEncodingException e){
          messageToUser.errorAlert(SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));

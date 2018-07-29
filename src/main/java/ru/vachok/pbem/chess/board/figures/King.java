@@ -1,10 +1,7 @@
 package ru.vachok.pbem.chess.board.figures;
 
 
-import ru.vachok.pbem.chess.board.ChessParty;
-
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -21,6 +18,18 @@ public class King implements Figures {
 
    private static final int FIG_PRICE = FigNamePrice.PRICE_KING;
 
+   private int currentCellID;
+
+   private int wantCellId;
+   King king;
+
+   private King() {
+      this.king = this;
+   }
+
+   public King getKing(){
+      return king;
+   }
 
    /**
     * @return цена фигуры
@@ -29,36 +38,19 @@ public class King implements Figures {
    public int getPriceFor() {
       return King.FIG_PRICE;
    }
-
-   /**Получение ID ячейки на доске.
-    * @param partyID ID нужной партии
-    * @param cF буква-координата
-    * @param j цифра-координата
-    * @return int, idchessboard из базы
-    * {@link ChessParty#getInstance(long)}
-    */
    @Override
-   public int getCellID(long partyID, Character cF, Integer j) {
-      ChessParty chessParty = ChessParty.getInstance(partyID);
-      int cellID = chessParty.getCellID("e".charAt(0), 4);
-      return cellID;
+   public Collection<Integer>  calculateLegalMovies() {
+      Collection<Integer> legalMovies = new ArrayList<>();
+      //todo 25.07.2018 (12:56) Придумать как считать легальные ходы .
+
+      return legalMovies;
    }
 
    /**
-    * @param cellID {@link Collection} интов - куда можно пойти этойц фигурой
-    */
-   @Override
-   public void calculateLegalMovies(Collection<String> cellID) {
-
-   }
-
-   /**
-    * @param moveFromCellID откуда ходим
-    * @param moveToCellID   куда ходим
     * @return ID и название текущего положения фигуры
     */
    @Override
-   public Map<Integer, String> currentMovie(int moveFromCellID, int moveToCellID) {
+   public Map<Integer, String> currentMovie() {
       return null;
    }
 
@@ -72,11 +64,10 @@ public class King implements Figures {
 
    /**
     * @param color    цвет
-    * @param position начальное положение (left|right)
     * @return имя фигуры
     */
    @Override
-   public String getFullName(String color, String position) {
-      return null;
+   public String getFullName(String color) {
+      return color+"-king";
    }
 }

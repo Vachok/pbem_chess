@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Date;
@@ -32,8 +33,9 @@ public class Utilit {
 
    private static final Logger LOGGER = Logger.getLogger(SOURCE_CLASS);
 
-   private static MessageToUser messageToUser = new MessageCons();
+   private static final MessageToUser messageToUser = new MessageCons();
 
+   private static final DecoderEnc DECODER_UTF = new UTF8();
    /**
     * Проверка доступности ПК.
     *
@@ -111,7 +113,7 @@ public class Utilit {
    public static void whatNextToDo() {
       String s;
       Scanner scanner = new Scanner(System.in);
-      messageToUser.infoNoTitles(toUTF("Введите комманду. OR нажмите h, для вызова помощи."));
+      messageToUser.infoNoTitles(DECODER_UTF.toAnotherEnc("Введите комманду. OR нажмите h, для вызова помощи."));
       while(scanner.hasNext()){
          s = scanner.nextLine();
          switch(s){
@@ -124,7 +126,7 @@ public class Utilit {
                exitWitnClean(63);
                break;
             default:
-               throw new UnsupportedOperationException(Utilit.toUTF("ЗАПРЕЩАЮ!"));
+               throw new UnsupportedOperationException(DECODER_UTF.toAnotherEnc("ЗАПРЕЩАЮ!"));
          }
       }
    }
@@ -154,7 +156,7 @@ public class Utilit {
     * @param whatHelpNeeds чем помочь?
     */
    private static void helpMe(String whatHelpNeeds) {
-      throw new UnsupportedOperationException(toUTF("03 ЕДЕТ!\n\n") + whatHelpNeeds);
+      throw new UnsupportedOperationException(DECODER_UTF.toAnotherEnc("03 ЕДЕТ!\n\n") + whatHelpNeeds);
    }
 
    /**
@@ -180,7 +182,7 @@ public class Utilit {
          messageToUser.out("Utilit_128", (e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")).getBytes());
          messageToUser.errorAlert(SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
       }
-      messageToUser.info(toUTF("Я пошел..."), dirLog.getAbsolutePath(), new Date(dirLog.lastModified()) + "");
+      messageToUser.info(DECODER_UTF.toAnotherEnc("Я пошел..."), dirLog.getAbsolutePath(), new Date(dirLog.lastModified()) + "");
       System.exit(reaSon);
 
    }
@@ -191,11 +193,11 @@ public class Utilit {
     * @return строка в зависимости от времени суток, возвращает разное приветствие.
     */
    public String checkTime() {
-      String s = Utilit.toUTF("Доброго времени суток");
+      String s = DECODER_UTF.toAnotherEnc("Доброго времени суток");
       if(LocalTime.now().isAfter(LocalTime.of(12, 0))) s = "Добрый день!";
-      if(LocalTime.now().isAfter(LocalTime.of(21, 0))) s = "Добрый вечер!";
-      if(LocalTime.now().isBefore(LocalTime.of(9, 0))) s = "Доброй ночи!";
-      if(LocalTime.now().isBefore(LocalTime.of(12, 0))) s = "Доброе утро!";
+      if(LocalTime.now().isAfter(LocalTime.of(20, 30))) s = "Добрый вечер!";
+      if(LocalTime.now().isAfter(LocalTime.of(0, 0))) s = "Доброй ночи!";
+      if(LocalTime.now().isAfter(LocalTime.of(8, 30))) s = "Доброе утро!";
       return s;
    }
 
@@ -223,5 +225,18 @@ public class Utilit {
          Thread.currentThread().interrupt();
       }
       return s1;
+   }
+
+   /**
+    @return {@link InetAddress} имя локальной машины.
+    */
+   public static String thisPCName() {
+      try{
+         return InetAddress.getLocalHost().getHostName();
+      }
+      catch(UnknownHostException e){
+         messageToUser.errorAlert(SOURCE_CLASS, "ID - 236", e.getMessage());
+         return "No Name!";
+      }
    }
 }

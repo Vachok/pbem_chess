@@ -1,44 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.text.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.Group?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
-<Group xmlns:fx="http://javafx.com/fxml/1" id="root" xmlns="http://javafx.com/javafx/8"
-       fx:controller="ru.vachok.pbem.chess.FXApp">
-    <children>
+
+
+<fx:root type="VBox" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
         <AnchorPane id="mainPane" prefHeight="400.0" prefWidth="600.0">
             <children>
-                <MenuBar layoutY="2.0" prefHeight="27.0" prefWidth="600.0" AnchorPane.bottomAnchor="373.0"
-                         AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                <MenuBar layoutY="2.0" prefHeight="27.0" prefWidth="600.0" AnchorPane.bottomAnchor="373.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                     <menus>
                         <Menu text="File">
                             <items>
-                                <MenuItem id="newParty" fx:id="newParty" onAction="#newPartyAction"
-                                          text="Новая партия"/>
-                                <MenuItem id="loadParty" onAction="#loadPartyAct" text="Загрузить..."/>
+                                <MenuItem fx:id="newParty" disable="true" onAction="#newPartyAction" text="Новая партия" />
+                                <MenuItem id="loadParty" onAction="#loadPartyAct" text="Загрузить..." />
+                        <MenuItem id="speedDB" fx:id="speedDB" onAction="#speedDBAction" text="Добавить скорость..." />
                             </items>
                         </Menu>
                         <Menu mnemonicParsing="false" text="Edit">
                             <items>
-                                <MenuItem id="showBoard" onAction="#showBoard" text="Доска"/>
+                                <MenuItem id="showBoard" onAction="#showBoard" text="Доска" />
+                                <Menu text="Сервисы">
+                                    <items>
+                                        <MenuItem id="showBoard" onAction="#ftpChk" text="FTPChecker" />
+                                        <MenuItem id="newParty" fx:id="newParty1" onAction="#newPartyAction" text="Новая партия" />
+                                    </items>
+                                </Menu>
                             </items>
                         </Menu>
                         <Menu mnemonicParsing="false" text="Help">
                             <items>
-                                <MenuItem id="showIAbout" onAction="#sendFigMoves" text="Ходы"/>
+                                <MenuItem id="showIAbout" onAction="#sendFigMoves" text="Ходы" />
                             </items>
                         </Menu>
                     </menus>
                 </MenuBar>
-                <TextArea id="textF" fx:id="textF" editable="false" layoutX="200.0" layoutY="25.0" prefHeight="375.0"
-                          prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                          AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="25.0">
+                <TextArea id="textF" fx:id="textF" editable="false" layoutX="200.0" layoutY="25.0" prefHeight="375.0" prefWidth="600.0" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="25.0">
                     <font>
-                        <Font name="Ebrima" size="11.0"/>
+                        <Font name="Ebrima" size="11.0" />
                     </font>
                 </TextArea>
+            <VBox layoutX="227.0" layoutY="119.0" prefHeight="200.0" prefWidth="100.0" />
             </children>
         </AnchorPane>
-    </children>
-</Group>
+   </children>
+</fx:root>

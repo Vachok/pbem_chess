@@ -13,7 +13,8 @@ import javax.mail.Authenticator;
  * @since 20.06.2018 (16:22)
  */
 class DSRes extends Authenticator {
-   private static MessageToUser messageToUser = new MessageCons();
+
+   private static final MessageToUser messageToUser = new MessageCons();
    @Override
    protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
       messageToUser.infoNoTitles("YO");

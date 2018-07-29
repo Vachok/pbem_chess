@@ -45,5 +45,5 @@ public interface FtpConnect {
    /**
     * Соединиться с сервером
     */
-   void connect();
+   String connect();
 }

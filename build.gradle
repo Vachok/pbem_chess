@@ -3,10 +3,9 @@ plugins {
     id 'java'
     id 'application'
     id 'idea'
-    id 'war'
 }
 group 'ru.vachok.pbem.chess'
-version('0.40')
+version('0.45')
 mainClassName = group + '.FXApp'
 sourceCompatibility = 1.9
 sourceSets {
@@ -45,7 +44,6 @@ dependencies {
     testCompile group: 'org.testng', name: 'testng', version: '6.14.3'
     // https://mvnrepository.com/artifact/org.apache.commons/commons-email
     compile group: 'org.apache.commons', name: 'commons-email', version: '1.5'
-
 }
 buildScan {
     termsOfServiceUrl = 'https://gradle.com/terms-of-service'

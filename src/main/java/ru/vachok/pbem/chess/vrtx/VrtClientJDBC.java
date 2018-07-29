@@ -9,9 +9,9 @@ import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.SQLClient;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.DbProperties;
-import ru.vachok.mysqlandprops.FileProps;
-import ru.vachok.mysqlandprops.InitProperties;
+import ru.vachok.mysqlandprops.props.DbProperties;
+import ru.vachok.mysqlandprops.props.FileProps;
+import ru.vachok.mysqlandprops.props.InitProperties;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -32,7 +32,7 @@ public class VrtClientJDBC extends AbstractVerticle {
 
     private InitProperties initProperties = new DbProperties("dbreg");
 
-    private MessageToUser messageToUser = new MessageCons();
+   private final MessageToUser messageToUser = new MessageCons();
 
     @Override
     public String toString() {
@@ -70,7 +70,7 @@ public class VrtClientJDBC extends AbstractVerticle {
         return JDBCClient.createShared(Vertx.vertx(), configJSON());
     }
 
-    private JsonObject configJSON() {
+   private JsonObject configJSON() {
         Properties properties = new Properties();
         try {
             properties = initProperties.getProps();

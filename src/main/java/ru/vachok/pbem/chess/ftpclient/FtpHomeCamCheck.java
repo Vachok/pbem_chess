@@ -5,96 +5,100 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.DbProperties;
-import ru.vachok.mysqlandprops.FileProps;
-import ru.vachok.mysqlandprops.InitProperties;
-import ru.vachok.mysqlandprops.RegRuMysql;
+import ru.vachok.mysqlandprops.props.DBRegProperties;
+import ru.vachok.mysqlandprops.props.FileProps;
+import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.pbem.chess.emails.ESender;
 import ru.vachok.pbem.chess.emails.EmailsProviders;
 import ru.vachok.pbem.chess.emails.SimpleEmailREG;
 import ru.vachok.pbem.chess.emails.VachokMailer;
+import ru.vachok.pbem.chess.utilitar.ConstantsFor;
 import ru.vachok.pbem.chess.utilitar.DecoderEnc;
 import ru.vachok.pbem.chess.utilitar.UTF8;
-import ru.vachok.pbem.chess.utilitar.Utilit;
+import ru.vachok.pbem.chess.utilitar.UserAns;
 
-import java.io.File;
 import java.io.IOException;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Properties;
+import java.util.concurrent.*;
+
+import static ru.vachok.pbem.chess.utilitar.ConstantsFor.MY_EMAIL;
+import static ru.vachok.pbem.chess.utilitar.ConstantsFor.RCPT;
 
 
 /**
- * Периодическая проверка FTP-сервера. Если размер файлов менялся - отправить об этом сообщение.
- *
- * @since 30.06.2018 (1:19)
- */
-public class FtpHomeCamCheck implements FtpConnect, Runnable {
+ Периодическая проверка FTP-сервера. Если размер файлов менялся - отправить об этом сообщение.
+
+ @since 30.06.2018 (1:19) */
+public class FtpHomeCamCheck implements FtpConnect, Callable<String>, Runnable {
 
    /**
-    * Simple Name класса, для поиска настроек
+    Simple Name класса, для поиска настроек
     */
    private static final String SOURCE_CLASS = FtpHomeCamCheck.class.getSimpleName();
 
    /**
-    * {@link MessageCons}
+    {@link MessageCons}
     */
-   private static MessageToUser messageToUser = new MessageCons();
+   private static final MessageToUser messageToUser = new MessageCons();
 
    /**
-    * {@link FtpConnect#getClient()}
+    {@link UTF8}
+    */
+   private static final DecoderEnc UTF_8 = new UTF8();
+
+   /**
+    {@link DBRegProperties} - {@link ConstantsFor#APP_NAME} + {@link #SOURCE_CLASS}
+    */
+   private static final InitProperties dbRegProperties = new DBRegProperties(ConstantsFor.APP_NAME + SOURCE_CLASS);
+
+   /**
+    {@link FtpConnect#getClient()}
     */
    private final FTPClient ftpClient = getClient();
 
-   private InitProperties initProperties;
-
    /**
-    * {@link UTF8}
+    имя папки, исходя из сегодняшней даты.
+    {@link #dateAsFolderName()}
     */
-   private DecoderEnc decoderEnc = new UTF8();
-
-   private Properties properties = new Properties();
+   private final String eDateSt = dateAsFolderName();
 
    /**
-    * имя папки, исходя из сегодняшней даты.
-    * {@link #dateAsFolderName()}
+    <b>Init - </b> {@link #FtpHomeCamCheck()}
+    {@link #connect()} , {@link #isVeryOld(String)}
     */
-   private String eDateSt = dateAsFolderName();
+   private final Properties properties = dbRegProperties.getProps();
 
    /**
-    * Конструктор-инициализатор класса.
-    * Если БД {@link RegRuMysql} в данный момент не доступна,
-    * пытается забрать установки из локального файла. {@code {@link #SOURCE_CLASS}.prorerties}
+    0. <b>Конструктор-инициализатор класса</b>.
+    <p>
+    Тащит {@link #properties} из {@link DBRegProperties}.
+    <p>
+    1 {@link #call()}
     */
    public FtpHomeCamCheck() {
-      try{
-         File properFile = new File(SOURCE_CLASS + ".properties");
-         if(!properFile.exists()){
-            initProperties = new DbProperties(SOURCE_CLASS);
-            properties = initProperties.getProps();
-            run();
-         }
-         else{ initProperties = new FileProps(SOURCE_CLASS); }
-      }
-      catch(Exception e){
-         FtpHomeCamCheck.messageToUser.errorAlert(SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
-      }
+      call();
    }
 
    /**
-    * 1. Запуск, как {@link Runnable}
-    * 1.1 {@link #connect()}
+    1. {@link #run()}
+
+    @return {@link #connect()}
+    @see UserAns
     */
    @Override
-   public void run() {
-      properties = initProperties.getProps();
-      connect();
+   public String call() {
+      return connect();
    }
 
    /**
-    * Делает имя рабочей папки
-    * {@link #connect()}
-    *
-    * @return массив {@link FTPFile} из рабочей папки {@link #eDateSt}. Получает методом {@link #ftpFiles(FTPClient, String)}, после получения рабочей папки.
+    Делает имя рабочей папки
+    {@link #connect()}
+
+    @return массив {@link FTPFile} из рабочей папки {@link #eDateSt}. Получает методом {@link #ftpFiles(FTPClient, String)}, после получения рабочей папки.
     */
    @Override
    public FTPFile[] getWorkFolderName() {
@@ -122,34 +126,33 @@ public class FtpHomeCamCheck implements FtpConnect, Runnable {
    }
 
    /**
-    * 1. Соединение с сервером физически.
-    * 1.1 {@link #dnLoader(FTPFile)}
-    * 1.3 {@link #messageToSend(long, long)}
-    * 1.4 {@link #eSend(String)}
-    *
-    * @see #getWorkFolderName()
+    1. Соединение с сервером физически.
+    1.1 {@link #dnLoader(FTPFile)}
+    1.3 {@link #messageToSend(long, long)}
+    1.4 {@link #eSend(String)}
+
+    @see #getWorkFolderName()
     */
    @Override
-   public void connect() {
-      ftpClient.setAutodetectUTF8(true);
-
+   public String connect() {
       long sizeAll = 0;
       for(FTPFile ftpFile : getWorkFolderName()){
          FtpHomeCamCheck.dnLoader(ftpFile);
          sizeAll += ftpFile.getSize();
       }
-      sizeAll = sizeAll / 1024 / 1024;
+      sizeAll = sizeAll / ConstantsFor.MEGABYTE;
       long lo = sizeAll - Long.parseLong(properties.getProperty("size2downMeg"));
       properties.setProperty("size2downMeg", sizeAll + "");
-      FtpHomeCamCheck.messageToUser.info(FtpHomeCamCheck.SOURCE_CLASS, decoderEnc.toAnotherEnc("Всего в мегабайтах, после последней проверки: "), sizeAll + "/(LO: " + lo + ")");
+      FtpHomeCamCheck.messageToUser.info(FtpHomeCamCheck.SOURCE_CLASS, UTF_8.toAnotherEnc("Всего в мегабайтах, после последней проверки: "), sizeAll + "/(LO: " + lo + ")");
       if(lo!=0) eSend(messageToSend(sizeAll, lo));
+      return FtpHomeCamCheck.SOURCE_CLASS + UTF_8.toAnotherEnc("\nВсего в мегабайтах, после последней проверки: \n") + sizeAll + "/(LO: " + lo + ")";
    }
 
    /**
-    * 1 {@link #connect()}
-    * 1.2 загрузка одного файла с сервера.
-    *
-    * @param ftpFile пофайлово
+    1 {@link #connect()}
+    1.2 загрузка одного файла с сервера.
+
+    @param ftpFile пофайлово
     */
    private static void dnLoader(FTPFile ftpFile) {
       messageToUser.info(ftpFile.getName(), ftpFile.getGroup(), ftpFile.getLink());
@@ -157,43 +160,53 @@ public class FtpHomeCamCheck implements FtpConnect, Runnable {
    }
 
    /**
-    * 1.4 Почтовое отправление {@link #connect()}
-    *
-    * @param msg тело письма.
-    * @see ESender
-    * @see VachokMailer
-    * @see EmailsProviders
-    * @see SimpleEmailREG
+    1.4 Почтовое отправление {@link #connect()}
+
+    @param msg тело письма.
+    @see ESender
+    @see VachokMailer
+    @see EmailsProviders
+    @see SimpleEmailREG
     */
    private void eSend(String msg) {
-      List<String> rcpt = new ArrayList<>();
-      rcpt.add("143500@gmail.com");
-      new DbProperties(FtpHomeCamCheck.SOURCE_CLASS).delProps();
-      ESender.sendM(rcpt, "FTP", msg);
-      new FileProps(FtpHomeCamCheck.SOURCE_CLASS).setProps(properties);
-      new DbProperties(FtpHomeCamCheck.SOURCE_CLASS).setProps(properties);
+      InitProperties toFile = new FileProps(SOURCE_CLASS);
+      toFile.setProps(properties);
+      dbRegProperties.delProps();
+      RCPT.add(MY_EMAIL);
+      MessageToUser mail = new ru.vachok.messenger.email.ESender(RCPT);
+      mail.infoNoTitles(msg);
+      dbRegProperties.setProps(properties);
    }
 
    /**
-    * 1.3 {@link FtpHomeCamCheck#connect()}
-    *
-    * @param sizeAll размер файлов в байтах
-    * @param difSize разница сейчас-сохраненный в {@link Properties}
-    * @return сообщение чтобы отправить по-почте.
+    1.3 {@link FtpHomeCamCheck#connect()}
+
+    @param sizeAll размер файлов в байтах
+    @param difSize разница сейчас-сохраненный в {@link Properties}
+    @return сообщение чтобы отправить по-почте.
     */
    private String messageToSend(long sizeAll, long difSize) {
-      return FtpHomeCamCheck.SOURCE_CLASS + "\n" + Utilit.toUTF("Всего в мегабайтах, после последней проверки: ") + "\n" + sizeAll + "/(dif: " + difSize + ")" + "\n" + properties.toString();
+      Callable<String> locFiles = new LocalFilesWorker();
+      Future<String> submit = Executors.newSingleThreadExecutor().submit(locFiles);
+      try{
+         return FtpHomeCamCheck.SOURCE_CLASS + "\n" + UTF_8.toAnotherEnc("Всего в мегабайтах, после последней проверки: ") + "\n" + sizeAll + "/(dif: " + difSize + ")" + "\n" + submit.get();
+      }
+      catch(InterruptedException | ExecutionException e){
+         messageToUser.errorAlert(SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
+         Thread.currentThread().interrupt();
+      }
+      return "GATTAFUCKER";
    }
 
    /**
-    * 1 {@link #getWorkFolderName()}
-    * 1.1 {@link #isVeryOld(String)} проверка "давности". Производится путём сверки текущего времени и времени файлика <i>index.dat</i>
-    * на FTP-сервере.
-    * 1.2 {@link #dateAsFolderName()}
-    *
-    * @param ftpClient      {@link FtpConnect#getClient()}
-    * @param workFolderName {@link #eDateSt}
-    * @return массив {@link FTPFile}
+    1 {@link #getWorkFolderName()}
+    1.1 {@link #isVeryOld(String)} проверка "давности". Производится путём сверки текущего времени и времени файлика <i>index.dat</i>
+    на FTP-сервере.
+    1.2 {@link #dateAsFolderName()}
+
+    @param ftpClient      {@link FtpConnect#getClient()}
+    @param workFolderName {@link #eDateSt}
+    @return массив {@link FTPFile}
     */
    private FTPFile[] ftpFiles(FTPClient ftpClient, String workFolderName) {
       FTPFile[] ftpFiles = new FTPFile[0];
@@ -216,10 +229,10 @@ public class FtpHomeCamCheck implements FtpConnect, Runnable {
    }
 
    /**
-    * 1.1 {@link #ftpFiles(FTPClient, String)}
-    *
-    * @param indexChangeTime timestamp когда менялся файл index.dat
-    * @return давно или нет производились изменения.
+    1.1 {@link #ftpFiles(FTPClient, String)}
+
+    @param indexChangeTime timestamp когда менялся файл index.dat
+    @return давно или нет производились изменения.
     */
    private boolean isVeryOld(String indexChangeTime) {
       int hourNow = LocalTime.now().getHour();
@@ -246,12 +259,12 @@ public class FtpHomeCamCheck implements FtpConnect, Runnable {
    }
 
    /**
-    * 1 {@link #ftpFiles(FTPClient, String)}
-    * 1.2 создаёт имя {@link #eDateSt}
-    *
-    * @return имя рабочей папки на FTP
-    * @see Calendar
-    * {@link #eDateSt}
+    1 {@link #ftpFiles(FTPClient, String)}
+    1.2 создаёт имя {@link #eDateSt}
+
+    @return имя рабочей папки на FTP
+    @see Calendar
+    {@link #eDateSt}
     */
    private String dateAsFolderName() {
       Integer year = Calendar.getInstance().get(Calendar.YEAR);
@@ -263,5 +276,29 @@ public class FtpHomeCamCheck implements FtpConnect, Runnable {
       if(day >= 10 && month >= 10) dateT = year.toString() + month.toString() + day.toString();
       if(day < 10 && month >= 10) dateT = year.toString() + month.toString() + "0" + day.toString();
       return dateT;
+   }
+
+   /**
+    *
+    */
+   @Override
+   public void run() {
+      long l = System.currentTimeMillis();
+      Callable<String> locFiles = new LocalFilesWorker();
+      Future<String> submit = Executors.newSingleThreadExecutor().submit(locFiles);
+      String filesLocal;
+      try{
+         filesLocal = submit.get();
+         messageToUser.infoNoTitles(filesLocal);
+         String s2 = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - l)
+               + UTF_8.toAnotherEnc(" сек.");
+         String s1 = UTF_8.toAnotherEnc("Время");
+         messageToUser.info(SOURCE_CLASS + ".run", s1, s2);
+         eSend(filesLocal + s1 + s2);
+      }
+      catch(InterruptedException | ExecutionException e){
+         messageToUser.errorAlert(SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
+         Thread.currentThread().interrupt();
+      }
    }
 }

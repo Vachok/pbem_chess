@@ -3,8 +3,8 @@ package ru.vachok.pbem.chess.emails.parse;
 
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.DbProperties;
-import ru.vachok.mysqlandprops.InitProperties;
+import ru.vachok.mysqlandprops.props.DbProperties;
+import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.pbem.chess.utilitar.ConstantsFor;
 import ru.vachok.pbem.chess.utilitar.DecoderEnc;
 import ru.vachok.pbem.chess.utilitar.UTF8;
@@ -18,14 +18,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
- * Работа с почтой Chess.
+ * Р Р°Р±РѕС‚Р° СЃ РїРѕС‡С‚РѕР№ ChessOnBoard.
  *
  * @since 17.07.2018 (20:11)
  */
 public class ChessBotBox implements ParseMSG {
 
    /**
-    * Simple Name класса, для поиска настроек
+    * Simple Name РєР»Р°СЃСЃР°, РґР»СЏ РїРѕРёСЃРєР° РЅР°СЃС‚СЂРѕРµРє
     */
    private static final String SOURCE_CLASS = ChessBotBox.class.getSimpleName();
 
@@ -33,22 +33,22 @@ public class ChessBotBox implements ParseMSG {
     * chessBot
     * {@link DbProperties}
     */
-   private InitProperties initMailProperties = new DbProperties("chessBot");
+   private final InitProperties initMailProperties = new DbProperties("chessBot");
 
    /**
     * {@link DbProperties} SimpleEmailBinchess
     */
-   private InitProperties initAUTHProperties = new DbProperties("SimpleEmailBinchess");
+   private final InitProperties initAUTHProperties = new DbProperties("SimpleEmailBinchess");
 
    /**
     * {@link MessageCons}
     */
-   private MessageToUser messageToUser = new MessageCons();
+   private final MessageToUser messageToUser = new MessageCons();
 
    private DecoderEnc decoderEnc = new UTF8();
 
    /**
-    * @return {@link Message} массив сообщений из ящика.
+    * @return {@link Message} РјР°СЃСЃРёРІ СЃРѕРѕР±С‰РµРЅРёР№ РёР· СЏС‰РёРєР°.
     */
    @Override
    public Folder mailboxFolder(String folderName) {
@@ -68,19 +68,19 @@ public class ChessBotBox implements ParseMSG {
          messageToUser.errorAlert(SOURCE_CLASS, e.getMessage(), "ChessBotBox.checkMessages_39");
       }
       decoderEnc = new UTF8();
-      throw new NullPointerException(decoderEnc.toAnotherEnc("ЖЕСТИШЬ, ПАЦА!!"));
+      throw new NullPointerException(decoderEnc.toAnotherEnc("Р–Р•РЎРўРёРЁР¬, РџРђР¦Рђ!!"));
    }
 
    /**
-    * @param toEmail {@link Message}, для отсылки SMTP.
+    * @param toEmail {@link Message}, РґР»СЏ РѕС‚СЃС‹Р»РєРё SMTP.
     */
    @Override
    public void sendMessage(Message toEmail) {
-
+      throw ConstantsFor.NOT_READY;
    }
 
    /**
-    * Очистка ящика
+    * РћС‡РёСЃС‚РєР° СЏС‰РёРєР°
     */
    @Override
    public void cleanMailbox() {

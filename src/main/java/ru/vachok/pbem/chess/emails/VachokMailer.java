@@ -3,8 +3,10 @@ package ru.vachok.pbem.chess.emails;
 
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.DbProperties;
-import ru.vachok.mysqlandprops.InitProperties;
+import ru.vachok.mysqlandprops.props.DBRegProperties;
+import ru.vachok.mysqlandprops.props.DbProperties;
+import ru.vachok.mysqlandprops.props.InitProperties;
+import ru.vachok.pbem.chess.utilitar.ConstantsFor;
 
 import javax.mail.Authenticator;
 import javax.mail.PasswordAuthentication;
@@ -36,17 +38,17 @@ public class VachokMailer implements Serializable, EmailsProviders {
     * @deprecated
     */
    @Deprecated (since = "15.07.2018 (20:46)", forRemoval = true)
-   private String version = String.valueOf(serialVersionUID);
+   private final String version = String.valueOf(serialVersionUID);
 
    /**
     * Тип {@link Provider}, для отправки
     */
-   private transient Provider.Type transport = TRANSPORT;
+   private final transient Provider.Type transport = TRANSPORT;
 
    /**
     * {@link MessageCons}
     */
-   private transient MessageToUser messageToUser = new MessageCons();
+   private final transient MessageToUser messageToUser = new MessageCons();
 
    /**
     * Установщик класса.
@@ -132,12 +134,12 @@ public class VachokMailer implements Serializable, EmailsProviders {
       /**
        * {@link MessageCons}
        */
-      private static MessageToUser messageToUser = new MessageCons();
+      private static final MessageToUser messageToUser = new MessageCons();
 
       /**
        * {@link DbProperties}
        */
-      private static InitProperties initProperties = new DbProperties("SimpleEmailBinchess");
+      private static final InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + SOURCE_CLASS);
       @Override
       public String toString() {
          return "AuthForChess{" +

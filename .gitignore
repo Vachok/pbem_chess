@@ -88,3 +88,14 @@ site.txt
 GamesPosBegin.properties
 FtpHomeCamCheck.properties
 testb.properties
+InitProperties.properties
+StartMePChess.properties
+/README.md
+/.idea/
+/.gradle/
+/play.pls.prn
+/play.pls
+/mail/
+MailWorksLocal.properties
+MailWorksLocalTest.properties
+/MailMessages.properties

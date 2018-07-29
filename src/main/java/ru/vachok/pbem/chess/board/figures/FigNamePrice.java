@@ -1,6 +1,19 @@
 package ru.vachok.pbem.chess.board.figures;
 
 
+import ru.vachok.mysqlandprops.DataConnectTo;
+import ru.vachok.mysqlandprops.RegRuMysql;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+
 /**
  * "Цены" фигур
  *
@@ -42,11 +55,11 @@ public enum FigNamePrice {
     */
    public static final int PRICE_PAWN = 1000;
 
+   private static final String SOURCE_CLASS = FigNamePrice.class.getSimpleName();
+
    private static long partyID;
 
-   static long getPartyID() {
-      return partyID;
-   }
+   private static final DataConnectTo dataConnectTo = new RegRuMysql();
 
    public static void setPartyID(long partyID) {
       FigNamePrice.partyID = partyID;
@@ -74,5 +87,20 @@ public enum FigNamePrice {
 
    public String getBishop(String color, String startPos) {
       return color + "-" + startPos + "-bishop";
+   }
+
+   static long getPartyID() {
+      try(Connection c = dataConnectTo.getDefaultConnection("u0466446_chess");
+          PreparedStatement p = c.prepareStatement("select partyid from chessid");
+          ResultSet r = p.executeQuery()){
+         while(r.next()){
+            if(r.last()) partyID = r.getLong("partyid");
+         }
+      }
+      catch(SQLException e){
+         Logger.getLogger(SOURCE_CLASS).log(Level.WARNING, SOURCE_CLASS + "\n" + e.getMessage() + "\n\n\n" + Arrays.toString(e.getStackTrace()));
+      }
+      Logger.getLogger(SOURCE_CLASS).log(Level.INFO, MessageFormat.format("{0} is partyID", partyID));
+      return partyID;
    }
 }

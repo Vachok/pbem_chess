@@ -19,11 +19,28 @@ public class UTF8 implements DecoderEnc, Callable<String> {
     */
    private static final String SOURCE_CLASS = UTF8.class.getSimpleName();
 
-   private MessageToUser messageToUser = new MessageCons();
+   private final MessageToUser messageToUser = new MessageCons();
 
    private String toDecode;
 
    private byte[] bytesDecoded;
+
+   /**
+    Конвертер в CP-1251.
+
+    @param bytes
+    @return нужная строка в нужной кодировке
+    */
+   @Override
+   public String toAnotherEnc(byte[] bytes) {
+      try{
+         return new String(bytes, "UTF-8");
+      }
+      catch(UnsupportedEncodingException e){
+         messageToUser.errorAlert(SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
+      }
+      throw new UnsupportedOperationException("...");
+   }
 
    public UTF8() {
 
@@ -51,17 +68,6 @@ public class UTF8 implements DecoderEnc, Callable<String> {
       else{ retString = toDecode; }
 
       return toAnotherEnc(retString);
-   }
-
-   @Override
-   public String toAnotherFromBytes(byte[] strBytes) {
-      try{
-         return new String(strBytes, "UTF-8");
-      }
-      catch(UnsupportedEncodingException e){
-         messageToUser.errorAlert(SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
-      }
-      throw new UnsupportedOperationException("...");
    }
 
    /**

@@ -11,10 +11,10 @@ public interface DecoderEnc {
     * @return нужная строка в нужной кодировке
     */
    String toAnotherEnc(String stringForDecode);
-
    /**Конвертер в CP-1251.
-    * @param strBytes нужная строка в виде байт
+    * @param bytes байты строки
     * @return нужная строка в нужной кодировке
     */
-   String toAnotherFromBytes(byte[] strBytes);
+   String toAnotherEnc(byte[] bytes);
+
 }

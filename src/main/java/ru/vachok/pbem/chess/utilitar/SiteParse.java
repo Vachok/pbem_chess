@@ -21,9 +21,8 @@ public class SiteParse {
 
    private static final String SOURCE_CLASS = SiteParse.class.getSimpleName();
 
-   private MessageToUser messageToUser = new MessageCons();
+   private final MessageToUser messageToUser = new MessageCons();
 
-   //todo 14.07.2018 (3:22) DOC
    private URL siteURL;
 
    /**

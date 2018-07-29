@@ -2,7 +2,7 @@ package ru.vachok.pbem.chess.ftpclient;
 
 
 import org.apache.commons.net.ftp.FTP;
-import ru.vachok.mysqlandprops.DbProperties;
+import ru.vachok.mysqlandprops.props.DbProperties;
 
 
 /**

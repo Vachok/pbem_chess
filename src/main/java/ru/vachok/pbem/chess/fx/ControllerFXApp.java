@@ -1,6 +1,10 @@
 package ru.vachok.pbem.chess.fx;
 
 
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import ru.vachok.messenger.MessageFX;
 import ru.vachok.messenger.MessageToUser;
@@ -15,7 +19,6 @@ import ru.vachok.pbem.chess.FXApp;
 public class ControllerFXApp {
 
    private static final String SOURCE_CLASS = ControllerFXApp.class.getSimpleName();
-
    /**
     * {@link FXApp#setExit(Stage)}
     */
@@ -26,7 +29,12 @@ public class ControllerFXApp {
     *
     * @see MessageFX
     */
-   private MessageToUser messageToUser = new MessageFX();
+   private final MessageToUser messageToUser = new MessageFX();
+
+   public ControllerFXApp(FXMLLoader loader) {
+      loader.setController(this);
+      loader.setRoot(this);
+   }
 
    /**
     * Точка входа в класс.
@@ -36,15 +44,13 @@ public class ControllerFXApp {
     */
    public void controlFX(Stage primStage) {
       primStage.setTitle("HELLO");
-      this.controlStage = primStage;
-      controlStage.show();
    }
 
-   /**
-    * Стартует новую партию.
-    * //todo 14.07.2018 (19:23)
-    */
-   private void newParty() {
-      throw new UnsupportedOperationException("Not ready yet 12.07.2018 (16:00)");
+   @FXML
+   private void speedDBAction(ActionEvent actionEvent){
+      FileChooser torqueCSVfChooser = new FileChooser();
+      torqueCSVfChooser.setTitle("Выберите лог CSV");
+      torqueCSVfChooser.showOpenDialog(controlStage);
    }
+
 }
