@@ -128,7 +128,7 @@ public class FXApp extends Application {
     */
    public static void main(String[] args) {
       staticMess.info(SOURCE_CLASS, Arrays.toString(args), "id 25");
-      File file = mailDir();
+      File file = createMailDir();
       staticMess.infoNoTitles(file.getAbsolutePath());
       if(args.length <= 0){
          launch(args);
@@ -139,9 +139,17 @@ public class FXApp extends Application {
          for(String s : args){
             if(s.contains("1")) StartMePChess.doNext(1);
             if(s.contains("2")) StartMePChess.doNext(2);
-            if(s.contains("3")){ StartMePChess.doNext(3); }
-            else{
-               StartMePChess.noFX();
+            if(s.contains("3")){
+               StartMePChess.doNext(3);
+               if(s.contains("3")){
+                  StartMePChess.doNext(4);
+                  if(s.contains("3")){
+                     StartMePChess.doNext(5);
+                  }
+                  else{
+                     StartMePChess.noFX();
+                  }
+               }
             }
          }
       }
@@ -152,7 +160,7 @@ public class FXApp extends Application {
 
     @return папка mail
     */
-   private static File mailDir() {
+   private static File createMailDir() {
       File mailDirectory = new File("mail\\");
       if(!mailDirectory.exists()){
          try{

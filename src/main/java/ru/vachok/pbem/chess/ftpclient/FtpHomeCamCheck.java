@@ -53,7 +53,7 @@ public class FtpHomeCamCheck implements FtpConnect, Callable<String>, Runnable {
    /**
     {@link DBRegProperties} - {@link ConstantsFor#APP_NAME} + {@link #SOURCE_CLASS}
     */
-   private static final InitProperties dbRegProperties = new DBRegProperties(ConstantsFor.APP_NAME + SOURCE_CLASS);
+   private InitProperties dbRegProperties = new DBRegProperties(ConstantsFor.APP_NAME + SOURCE_CLASS);
 
    /**
     {@link FtpConnect#getClient()}
@@ -70,7 +70,7 @@ public class FtpHomeCamCheck implements FtpConnect, Callable<String>, Runnable {
     <b>Init - </b> {@link #FtpHomeCamCheck()}
     {@link #connect()} , {@link #isVeryOld(String)}
     */
-   private final Properties properties = dbRegProperties.getProps();
+   private Properties properties = dbRegProperties.getProps();
 
    /**
     0. <b>Конструктор-инициализатор класса</b>.
@@ -136,12 +136,15 @@ public class FtpHomeCamCheck implements FtpConnect, Callable<String>, Runnable {
    @Override
    public String connect() {
       long sizeAll = 0;
+      long size2downMeg = 0;
       for(FTPFile ftpFile : getWorkFolderName()){
          FtpHomeCamCheck.dnLoader(ftpFile);
          sizeAll += ftpFile.getSize();
       }
       sizeAll = sizeAll / ConstantsFor.MEGABYTE;
-      long lo = sizeAll - Long.parseLong(properties.getProperty("size2downMeg"));
+      Object size2downMeg1 = properties.getOrDefault("size2downMeg", "1");
+      size2downMeg = ( long ) size2downMeg1;
+      long lo = sizeAll - size2downMeg;
       properties.setProperty("size2downMeg", sizeAll + "");
       FtpHomeCamCheck.messageToUser.info(FtpHomeCamCheck.SOURCE_CLASS, UTF_8.toAnotherEnc("Всего в мегабайтах, после последней проверки: "), sizeAll + "/(LO: " + lo + ")");
       if(lo!=0) eSend(messageToSend(sizeAll, lo));

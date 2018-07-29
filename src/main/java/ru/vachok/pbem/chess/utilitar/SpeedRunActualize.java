@@ -1,5 +1,6 @@
 package ru.vachok.pbem.chess.utilitar;
 
+
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.DataConnectTo;
@@ -179,6 +180,7 @@ public class SpeedRunActualize implements Runnable {
          }
       };
       toDB.forEach(biConsumer);
+      ExecutorService executorService = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor());
       new MailMessages(true).call();
    }
 

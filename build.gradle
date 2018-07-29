@@ -5,7 +5,7 @@ plugins {
     id 'idea'
 }
 group 'ru.vachok.pbem.chess'
-version('0.45')
+version('0.46')
 mainClassName = group + '.FXApp'
 sourceCompatibility = 1.9
 sourceSets {

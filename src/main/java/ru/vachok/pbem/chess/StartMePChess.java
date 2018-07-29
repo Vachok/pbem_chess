@@ -72,7 +72,7 @@ public class StartMePChess extends Task<String> {
     <b>PRIVATE</b>
     */
    private StartMePChess() {
-      throw new UnsupportedOperationException("25.07.2018 (9:28) "+ SOURCE_CLASS+".private constructor");
+      throw new UnsupportedOperationException("25.07.2018 (9:28) " + SOURCE_CLASS + ".private constructor");
    }
 
    /**
@@ -83,12 +83,12 @@ public class StartMePChess extends Task<String> {
    public void run() {
       doNext(userAnswer);
    }
+
    /**
     {@link FXApp#main(java.lang.String[])}
     Консольная версия приложения.
     <p>
-    <b><i>Задаёт юзеру вопрос.</i></b> Запускает
-    {@link #doNext(Integer)}
+    <b><i>Задаёт юзеру вопрос.</i></b> Запускает {@link #doNext(Integer)}
 
     @see FtpHomeCamCheck
     @see StartScheduled
@@ -97,10 +97,10 @@ public class StartMePChess extends Task<String> {
       Properties properties = initProperties.getProps();
       messageToUser.info(SOURCE_CLASS, properties.toString(), UTF_8.toAnotherEnc(new Utilit().checkTime()));
       Scanner scanner = new Scanner(System.in);
-      Integer userAnswer = 0;
+      Integer userAnswer;
       Map<Integer, String> names = StartScheduled.Services.getNames();
       messageToUser.infoNoTitles(UTF_8.toAnotherEnc("Введите имя сервиса:\n" + names.toString().replaceAll(", ", "\n")));
-      while(scanner.hasNextInt()){
+      while(scanner.hasNext()){
          userAnswer = scanner.nextInt();
          doNext(userAnswer);
       }
@@ -112,6 +112,7 @@ public class StartMePChess extends Task<String> {
     <p>
     {@link #userAnswer} == 0, {@link System#exit(int)} <b>status 0</b>.
     {@link UserAns} - класс-стартер.
+
     @param userAnswer ответ пользователя на вопрос что запускать.
     @see FtpHomeCamCheck
     */
@@ -132,6 +133,7 @@ public class StartMePChess extends Task<String> {
       }
       return s;
    }
+
    /**
     @return {@link #SOURCE_CLASS}
     */

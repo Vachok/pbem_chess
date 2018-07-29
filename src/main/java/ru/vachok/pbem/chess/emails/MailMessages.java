@@ -20,8 +20,13 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.Callable;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static java.util.logging.Level.INFO;
+import static java.util.logging.Level.WARNING;
+import static ru.vachok.pbem.chess.utilitar.ConstantsFor.UTF_8_ENC;
 
 
 /**
@@ -45,33 +50,6 @@ public class MailMessages implements Callable<Message[]> {
       this.cleanMBox = cleanMBox;
       MessageToUser messageToUser = new MessageCons();
       messageToUser.info(SOURCE_CLASS, "cleanMBox is", cleanMBox + ".");
-   }
-
-   /**
-    <b>Конструктор default</b>
-    */
-   public MailMessages() {
-      Logger.getLogger(SOURCE_CLASS).log(Level.INFO, this.getClass().getTypeName());
-   }
-
-   /**{@link UserAns}, {@link MoveStarter}, {@link SpeedRunActualize}
-    <p>
-    В зависимости от {@link #cleanMBox}, или
-    1.1 {@link Cleaner#saveToDiskAndDelete(Folder)}
-    1.1 {@link #getInbox()}
-    @return сообщения. {@link Message}
-    */
-   @Override
-   public Message[] call() {
-      Message[] messages = new Message[0];
-      try{
-         if(cleanMBox) Cleaner.saveToDiskAndDelete(getInbox());
-         messages = getInbox().getMessages();
-      }
-      catch(MessagingException | IOException e){
-         Logger.getLogger(SOURCE_CLASS).log(Level.WARNING, String.format("%s%n%n%s", e.getMessage(), Arrays.toString(e.getStackTrace())));
-      }
-      return messages;
    }
 
    /**{@link #call()}
@@ -102,13 +80,42 @@ public class MailMessages implements Callable<Message[]> {
       try{
          inBox = Objects.requireNonNull(store).getFolder("Inbox");
          inBox.open(Folder.READ_WRITE);
-         Logger.getLogger(Cleaner.class.getSimpleName()).log(Level.INFO, inBox.getMessageCount() + " inbox size");
+         Logger.getLogger(Cleaner.class.getSimpleName()).log(INFO, inBox.getMessageCount() + " inbox size");
          return inBox;
       }
       catch(MessagingException e){
          Logger.getLogger(SOURCE_CLASS).log(Level.WARNING, String.format("%s%n%n%s", e.getMessage(), Arrays.toString(e.getStackTrace())));
       }
       throw new UnsupportedOperationException("Inbox not available :(");
+   }
+
+   /**
+    {@link UserAns}, {@link MoveStarter}, {@link SpeedRunActualize}
+    <p>
+    В зависимости от {@link #cleanMBox}, или
+    1.1 {@link Cleaner#saveToDiskAndDelete(Folder)}
+    1.1 {@link #getInbox()}
+
+    @return сообщения. {@link Message}
+    */
+   @Override
+   public Message[] call() {
+      Message[] messages = new Message[0];
+      try{
+         if(cleanMBox) Cleaner.saveToDiskAndDelete(getInbox());
+         messages = getInbox().getMessages();
+      }
+      catch(MessagingException | IOException e){
+         Logger.getLogger(SOURCE_CLASS).log(Level.WARNING, String.format("%s%n%n%s", e.getMessage(), Arrays.toString(e.getStackTrace())));
+      }
+      return messages;
+   }
+
+   /**
+    <b>Конструктор default</b>
+    */
+   public MailMessages() {
+      Logger.getLogger(SOURCE_CLASS).log(INFO, this.getClass().getTypeName());
    }
 
    /**{@link #getInbox()}
@@ -138,21 +145,48 @@ public class MailMessages implements Callable<Message[]> {
       initProperties.setProps(sessionProps);
    }
 
-   /** //todo 29.07.2018 (2:55) DOCS
+   /** <b>Очищает ящик</b>.
     * @since 28.07.2018 (2:55)
     */
-   static class Cleaner extends MailMessages {
+   public static class Cleaner extends MailMessages {
+
+      /**
+       Эксепшены. по-теме сообщения.
+       Содержащее этот паттерн удалено будет. Остальное нет.
+       <p>
+       Если содержит {@code all} - удалить всё.
+       */
+      private static String delMe = "";
+
+      /**
+       @param delMe что требуется удалить.
+       */
+      public Cleaner(String delMe) {
+         Cleaner.delMe = delMe;
+      }
+
+      /**
+       Default
+       */
+      public Cleaner() {
+      }
 
 
       static Message[] saveToDiskAndDelete(Folder inbox) throws MessagingException, IOException {
          Message[] mailMes = inbox.getMessages();
+         if(mailMes.length <= 0) throw new RejectedExecutionException(UTF_8_ENC.toAnotherEnc("Сообщений нет..."));
          for(Message message : mailMes){
             String fileName = "mail\\" + message.getMessageNumber() + "-" + System.currentTimeMillis() + ".eml";
             FileOutputStream outputStream = new FileOutputStream(fileName);
             message.writeTo(outputStream);
-            if(new File(fileName).exists() && new File(fileName).length() > 10) message.setFlag(Flags.Flag.DELETED, true);
+            if(!message.getSubject().toLowerCase().contains(delMe)){
+               Logger.getLogger(Cleaner.class.getSimpleName()).log(WARNING,
+                     UTF_8_ENC.toAnotherEnc("Пропущено: " + Arrays.toString(message.getFrom()) + "\n" + message.getSubject()));
+            }
+            else
+               if(new File(fileName).exists() && new File(fileName).length() > 10) message.setFlag(Flags.Flag.DELETED, true);
          }
-         Logger.getLogger(Cleaner.class.getSimpleName()).log(Level.INFO, inbox.getMessageCount() + " inbox size");
+         Logger.getLogger(Cleaner.class.getSimpleName()).log(INFO, inbox.getMessageCount() + " inbox size");
          inbox.close(true);
          return mailMes;
       }

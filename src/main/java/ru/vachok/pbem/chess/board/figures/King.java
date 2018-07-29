@@ -1,7 +1,9 @@
 package ru.vachok.pbem.chess.board.figures;
 
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
 
 
 /**
@@ -38,6 +40,11 @@ public class King implements Figures {
    public int getPriceFor() {
       return King.FIG_PRICE;
    }
+
+   public static int getPriceForGame() {
+      return 10000;
+   }
+
    @Override
    public Collection<Integer>  calculateLegalMovies() {
       Collection<Integer> legalMovies = new ArrayList<>();

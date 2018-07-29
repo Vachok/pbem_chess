@@ -23,6 +23,9 @@ import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static java.util.logging.Level.INFO;
+import static java.util.logging.Level.WARNING;
+
 
 /**
  Действия на ответ пользователя.
@@ -82,7 +85,7 @@ public class UserAns {
    public static void ansThree() {
       try{
          Future<String> s = FIXED_THREAD_POOL_5.submit(new LocalFilesWorker());
-         Logger.getLogger(SOURCE_CLASS).log(Level.INFO, s.get());
+         Logger.getLogger(SOURCE_CLASS).log(INFO, s.get());
          Runnable runnable = new StartScheduled(new FtpHomeCamCheck(), 90);
          runnable.run();
       }
@@ -118,17 +121,27 @@ public class UserAns {
          for(Message m : messages){
             MESSAGE_TO_USER.info(Arrays.toString(m.getFrom()).replaceAll(", ", "\n"), m.getSubject(), m.getContent().toString());
          }
+         ansFour(null);
       }
       catch(InterruptedException | ExecutionException | MessagingException | IOException e){
          Logger.getLogger(SOURCE_CLASS).log(Level.WARNING, String.format("%s%n%n%s", e.getMessage(), Arrays.toString(e.getStackTrace())));
          Thread.currentThread().interrupt();
       }
-      new MailMessages(true).call();
+
    }
 
    public static void ansFive() {
 
       Runnable r = new SpeedRunActualize();
       FIXED_THREAD_POOL_5.execute(r);
+   }
+
+   public static void ansFour(String s) throws ExecutionException, InterruptedException {
+
+      MailMessages.Cleaner cleaner = new MailMessages.Cleaner(s);
+      ExecutorService executorService = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor());
+      Future<Message[]> submit = executorService.submit(cleaner);
+      Message[] messages = submit.get();
+      Logger.getLogger(SOURCE_CLASS).log(WARNING, messages.length + " mails");
    }
 }
