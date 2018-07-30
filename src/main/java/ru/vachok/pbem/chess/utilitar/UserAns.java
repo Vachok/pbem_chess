@@ -4,7 +4,6 @@ package ru.vachok.pbem.chess.utilitar;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.PrExchange;
-import ru.vachok.pbem.chess.StartScheduled;
 import ru.vachok.pbem.chess.board.MoveStarter;
 import ru.vachok.pbem.chess.board.PartyNewIDParty;
 import ru.vachok.pbem.chess.emails.ESender;
@@ -86,8 +85,8 @@ public class UserAns {
       try{
          Future<String> s = FIXED_THREAD_POOL_5.submit(new LocalFilesWorker());
          Logger.getLogger(SOURCE_CLASS).log(INFO, s.get());
-         Runnable runnable = new StartScheduled(new FtpHomeCamCheck(), 90);
-         runnable.run();
+         Runnable ftp = new FtpHomeCamCheck();
+         FIXED_THREAD_POOL_5.execute(ftp);
       }
       catch(Exception e){
 

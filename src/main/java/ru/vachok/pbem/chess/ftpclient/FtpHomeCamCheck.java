@@ -143,7 +143,7 @@ public class FtpHomeCamCheck implements FtpConnect, Callable<String>, Runnable {
       }
       sizeAll = sizeAll / ConstantsFor.MEGABYTE;
       Object size2downMeg1 = properties.getOrDefault("size2downMeg", "1");
-      size2downMeg = ( long ) size2downMeg1;
+      size2downMeg = Long.parseUnsignedLong(size2downMeg1.toString());
       long lo = sizeAll - size2downMeg;
       properties.setProperty("size2downMeg", sizeAll + "");
       FtpHomeCamCheck.messageToUser.info(FtpHomeCamCheck.SOURCE_CLASS, UTF_8.toAnotherEnc("Всего в мегабайтах, после последней проверки: "), sizeAll + "/(LO: " + lo + ")");
@@ -175,6 +175,7 @@ public class FtpHomeCamCheck implements FtpConnect, Callable<String>, Runnable {
       InitProperties toFile = new FileProps(SOURCE_CLASS);
       toFile.setProps(properties);
       dbRegProperties.delProps();
+      RCPT.clear();
       RCPT.add(MY_EMAIL);
       MessageToUser mail = new ru.vachok.messenger.email.ESender(RCPT);
       mail.infoNoTitles(msg);
