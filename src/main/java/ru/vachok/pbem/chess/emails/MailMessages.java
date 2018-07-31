@@ -30,7 +30,7 @@ import static ru.vachok.pbem.chess.utilitar.ConstantsFor.UTF_8_ENC;
 
 
 /**
- <b>Получает сообщения</b>
+ <h1>Получает сообщения</h1>
  <p>
  {@link UserAns}, {@link MoveStarter}, {@link SpeedRunActualize}
 
@@ -40,9 +40,13 @@ public class MailMessages implements Callable<Message[]> {
    private static final String SOURCE_CLASS = MailMessages.class.getSimpleName();
 
 
+   /**
+    <h3>true = очистка ящика.</h3>
+    */
    private boolean cleanMBox;
 
-   /**<b>Конструктор очистки ящика.</b>
+   /**
+    <h2>Конструктор очистки ящика.</h2>
 
     @param cleanMBox удалить сообщения = true
     */
@@ -52,10 +56,42 @@ public class MailMessages implements Callable<Message[]> {
       messageToUser.info(SOURCE_CLASS, "cleanMBox is", cleanMBox + ".");
    }
 
-   /**{@link #call()}
+   /**
+    <b>Конструктор по-умолчанию.</b>
+    */
+   public MailMessages() {
+      Logger.getLogger(SOURCE_CLASS).log(INFO, this.getClass().getTypeName());
+   }
+
+   /**
+    <h2>Вызов</h2>
+    {@link UserAns}, {@link MoveStarter}, {@link SpeedRunActualize}
+    <p>
+    В зависимости от {@link #cleanMBox}, или
+    1.1 {@link Cleaner#saveToDiskAndDelete(Folder)}
+    1.1 {@link #getInbox()}
+
+    @return сообщения. {@link Message}
+    */
+   @Override
+   public Message[] call() {
+      Message[] messages = new Message[0];
+      try{
+         if(cleanMBox) Cleaner.saveToDiskAndDelete(getInbox());
+         messages = getInbox().getMessages();
+      }
+      catch(MessagingException | IOException e){
+         Logger.getLogger(SOURCE_CLASS).log(Level.WARNING, String.format("%s%n%n%s", e.getMessage(), Arrays.toString(e.getStackTrace())));
+      }
+      return messages;
+   }
+
+   /**
+    <h2>Взять {@link Folder} {@code Inbox}</h2>{@link #call()}
     <p>
     Проверяет почту.
     .1 {@link #getSessionProps()}
+
     @return папку Inbox. {@link Folder}
     */
    protected Folder getInbox() {
@@ -90,37 +126,10 @@ public class MailMessages implements Callable<Message[]> {
    }
 
    /**
-    {@link UserAns}, {@link MoveStarter}, {@link SpeedRunActualize}
-    <p>
-    В зависимости от {@link #cleanMBox}, или
-    1.1 {@link Cleaner#saveToDiskAndDelete(Folder)}
-    1.1 {@link #getInbox()}
-
-    @return сообщения. {@link Message}
-    */
-   @Override
-   public Message[] call() {
-      Message[] messages = new Message[0];
-      try{
-         if(cleanMBox) Cleaner.saveToDiskAndDelete(getInbox());
-         messages = getInbox().getMessages();
-      }
-      catch(MessagingException | IOException e){
-         Logger.getLogger(SOURCE_CLASS).log(Level.WARNING, String.format("%s%n%n%s", e.getMessage(), Arrays.toString(e.getStackTrace())));
-      }
-      return messages;
-   }
-
-   /**
-    <b>Конструктор default</b>
-    */
-   public MailMessages() {
-      Logger.getLogger(SOURCE_CLASS).log(INFO, this.getClass().getTypeName());
-   }
-
-   /**{@link #getInbox()}
+    {@link #getInbox()}
     <p>
     {@link #saveProps(Properties)}
+
     @return {@link Properties} от {@link DBRegProperties} {@code mail-regru}
     */
    private Properties getSessionProps() {
@@ -132,9 +141,11 @@ public class MailMessages implements Callable<Message[]> {
    }
 
 
-   /**<b>Пробует сохранить настройки в файл и в БД.</b>
+   /**<h2>Созранение {@link Properties}</h2>
+    Пробует сохранить настройки в файл и в БД.
     <p>
     {@link ConstantsFor#APP_NAME} + {@link #SOURCE_CLASS}
+
     @param sessionProps настройки сокдинения. {@link #getSessionProps()}
     */
    private void saveProps(Properties sessionProps) {
@@ -145,12 +156,14 @@ public class MailMessages implements Callable<Message[]> {
       initProperties.setProps(sessionProps);
    }
 
-   /** <b>Очищает ящик</b>.
-    * @since 28.07.2018 (2:55)
+   /**
+    <h1>Очищает ящик</h1>.
+
+    @since 28.07.2018 (2:55)
     */
    public static class Cleaner extends MailMessages {
 
-      /**
+      /**<h3>Разбор удалить/нет</h3>
        Эксепшены. по-теме сообщения.
        Содержащее этот паттерн удалено будет. Остальное нет.
        <p>
@@ -158,20 +171,24 @@ public class MailMessages implements Callable<Message[]> {
        */
       private static String delMe = "";
 
-      /**
+      /**<h2>Конструктор с уточнением по-удалению.</h2>
        @param delMe что требуется удалить.
        */
       public Cleaner(String delMe) {
          Cleaner.delMe = delMe;
       }
 
-      /**
-       Default
+      /**<h2>Конструктор умолч.</h2>
        */
       public Cleaner() {
       }
 
 
+      /**<h2>Работа</h2>{@link #cleanMBox}
+       @param inbox {@link #getInbox()}
+       @return {@link Message}[], если остались.
+       @throws MessagingException что-то случилось с почтой
+       @throws IOException сохраняет на диск.        */
       static Message[] saveToDiskAndDelete(Folder inbox) throws MessagingException, IOException {
          Message[] mailMes = inbox.getMessages();
          if(mailMes.length <= 0) throw new RejectedExecutionException(UTF_8_ENC.toAnotherEnc("Сообщений нет..."));
@@ -183,8 +200,7 @@ public class MailMessages implements Callable<Message[]> {
                Logger.getLogger(Cleaner.class.getSimpleName()).log(WARNING,
                      UTF_8_ENC.toAnotherEnc("Пропущено: " + Arrays.toString(message.getFrom()) + "\n" + message.getSubject()));
             }
-            else
-               if(new File(fileName).exists() && new File(fileName).length() > 10) message.setFlag(Flags.Flag.DELETED, true);
+            else{ if(new File(fileName).exists() && new File(fileName).length() > 10) message.setFlag(Flags.Flag.DELETED, true); }
          }
          Logger.getLogger(Cleaner.class.getSimpleName()).log(INFO, inbox.getMessageCount() + " inbox size");
          inbox.close(true);

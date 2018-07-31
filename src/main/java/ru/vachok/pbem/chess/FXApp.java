@@ -122,7 +122,7 @@ public class FXApp extends Application {
     1.3
     1.4 {@link StartMePChess#noFX()}
     Если агрументв нет, стартуем FX App {@link #start(Stage)}
-    Так же создаёт, если нет, почтовую папку mail {@link #mailDir()}
+    Так же создаёт, если нет, почтовую папку mail
 
     @param args аргументы
     */
@@ -135,7 +135,6 @@ public class FXApp extends Application {
 
       }
       else{
-         UNCONFIGURABLE_EXECUTOR_SERVICE.execute(SPEED_RUN_ACTUALIZE);
          for(String s : args){
             if(s.contains("1")) StartMePChess.doNext(1);
             if(s.contains("2")) StartMePChess.doNext(2);
@@ -162,6 +161,7 @@ public class FXApp extends Application {
     */
    private static File createMailDir() {
       File mailDirectory = new File("mail\\");
+      UNCONFIGURABLE_EXECUTOR_SERVICE.execute(SPEED_RUN_ACTUALIZE);
       if(!mailDirectory.exists()){
          try{
             FileUtils.forceMkdir(mailDirectory);

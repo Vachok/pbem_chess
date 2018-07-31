@@ -48,13 +48,16 @@ public class SpeedRunActualize implements Runnable {
     */
    @Override
    public void run() {
+      Thread.currentThread().setName("SpeedRunActualize.run");
       Map<Date, String> mailMessages = getMailMessages();
       messageToUser.infoNoTitles(mailMessages.toString());
       checkDates(mailMessages);
    }
 
    /**
-    @return //todo 28.07.2018 (21:19) DOCS
+    <h2>{@link Map}инг почты</h2>
+
+    @return {@link Map} сообщений, с темой speed: , где ключ = {@link Date}, а значение сообщение, как {@link String}
     */
    private Map<Date, String> getMailMessages() {
       Callable<Message[]> mailCall = new MailMessages();
@@ -83,8 +86,14 @@ public class SpeedRunActualize implements Runnable {
             "\n\n" + "*****************     ru.vachok.pbem.chess.utilitar.SpeedRunActualize.getMailMessages      ******************************");
    }
 
-   private void checkDates(Map<Date, String> mailMSGMap) {
-      Set<Date> dates = mailMSGMap.keySet();
+   /**
+    <h2>Проверка наличия записей в БД</h2>
+    {@link #sendSpeed(Map)}
+
+    @param mailMessagesMap {@link #getMailMessages()}, проверенная по-датам.
+    */
+   private void checkDates(Map<Date, String> mailMessagesMap) {
+      Set<Date> dates = mailMessagesMap.keySet();
       Map<Date, String> sendDB = new HashMap<>();
       DATA_CONNECT_TO.getSavepoint(DEF_CON);
       try(PreparedStatement p = DEF_CON.prepareStatement("select * from speed");
@@ -97,7 +106,7 @@ public class SpeedRunActualize implements Runnable {
                long l = TimeUnit.MILLISECONDS.toHours(timeInDB - timeMessageSent);
                if(l <= 24){
                   messageToUser.infoNoTitles(l + " hrs");
-                  sendDB.put(d, mailMSGMap.get(d));
+                  sendDB.put(d, mailMessagesMap.get(d));
                }
             }
          }
@@ -110,28 +119,12 @@ public class SpeedRunActualize implements Runnable {
       }
    }
 
-   public void byA107() {
-      try(PreparedStatement ps = DEF_CON.prepareStatement("select * from speed where Road = 0");
-          ResultSet r = ps.executeQuery()){
-         /*107*/
-         int ind = 0;
-         double speedAv = 0.0;
-         double timeAv = 0.0;
-         while(r.next()){
-            ind++;
-            speedAv += r.getDouble("Speed");
-            timeAv += r.getDouble("TimeSpend");
-         }
-         ConstantsFor.MESSAGE_LOG.info("Time and speed. byA107.", (speedAv / ind) + " speed", (timeAv / ind) + " time. Counter = " + ind);
-         rigA();
-      }
-      catch(SQLException e){
-         Logger.getLogger(SOURCE_CLASS).log(Level.WARNING, (SOURCE_CLASS + "\n" + e.getMessage() + "\n\n\n"
-                                                                  + Arrays.toString(e.getStackTrace()).replaceAll(", ",
-               "\n").replace("{", "").replace("}", "")));
-      }
-   }
+   /**
+    <h2>Отправка в БД</h2>
 
+    @param toDB {@link #checkDates(Map)} фильтрованный.
+    @see MailMessages
+    */
    private void sendSpeed(Map<Date, String> toDB) {
       messageToUser.infoNoTitles("StartMePChessOnBoardTest.sendSpeed");
       messageToUser.infoNoTitles("toDB = [" + toDB + "]");
@@ -180,10 +173,37 @@ public class SpeedRunActualize implements Runnable {
          }
       };
       toDB.forEach(biConsumer);
-      ExecutorService executorService = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor());
       new MailMessages(true).call();
    }
 
+   /**
+    <h2>Выборка среднего при езде по Бетонке.</h2>
+    */
+   public void byA107() {
+      try(PreparedStatement ps = DEF_CON.prepareStatement("select * from speed where Road = 0");
+          ResultSet r = ps.executeQuery()){
+         /*107*/
+         int ind = 0;
+         double speedAv = 0.0;
+         double timeAv = 0.0;
+         while(r.next()){
+            ind++;
+            speedAv += r.getDouble("Speed");
+            timeAv += r.getDouble("TimeSpend");
+         }
+         ConstantsFor.MESSAGE_LOG.info("Time and speed. byA107.", (speedAv / ind) + " speed", (timeAv / ind) + " time. Counter = " + ind);
+         rigA();
+      }
+      catch(SQLException e){
+         Logger.getLogger(SOURCE_CLASS).log(Level.WARNING, (SOURCE_CLASS + "\n" + e.getMessage() + "\n\n\n"
+                                                                  + Arrays.toString(e.getStackTrace()).replaceAll(", ",
+               "\n").replace("{", "").replace("}", "")));
+      }
+   }
+
+   /**
+    <h2>Выборка среднего при езде по Новориге.</h2>
+    */
    private void rigA() {
       try(PreparedStatement ps1 = DEF_CON.prepareStatement("select * from speed where Road = 1");
           ResultSet r1 = ps1.executeQuery()){
