@@ -75,7 +75,7 @@ public class FXApp extends Application {
 
     @see ESender
     */
-   private static final List<String> rcpt = new ArrayList<>();
+   private static final List<String> RCPT = new ArrayList<>();
 
    /**
     Статичные сообщения. В консоль.
@@ -114,7 +114,7 @@ public class FXApp extends Application {
    /**
     Запуск {@link #SPEED_RUN_ACTUALIZE}
     */
-   private static final ExecutorService UNCONFIGURABLE_EXECUTOR_SERVICE = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor());
+   private static final ExecutorService UNCONFIGURABLE_EXECUTOR_SERVICE_ONE_THR = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor());
    /**
     1. Запуск 1.1-1.4 в зависимости от полученного аргумента.
     1.1 {@link StartMePChess#doNext}
@@ -156,12 +156,12 @@ public class FXApp extends Application {
 
    /**
     Создаёт, папку , если ее нету.
-
+    Запускает {@link #SPEED_RUN_ACTUALIZE}, через {@link #UNCONFIGURABLE_EXECUTOR_SERVICE_ONE_THR}
     @return папка mail
     */
    private static File createMailDir() {
       File mailDirectory = new File("mail\\");
-      UNCONFIGURABLE_EXECUTOR_SERVICE.execute(SPEED_RUN_ACTUALIZE);
+
       if(!mailDirectory.exists()){
          try{
             FileUtils.forceMkdir(mailDirectory);
@@ -170,6 +170,7 @@ public class FXApp extends Application {
             staticMess.errorAlert(SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
          }
       }
+      UNCONFIGURABLE_EXECUTOR_SERVICE_ONE_THR.execute(SPEED_RUN_ACTUALIZE);
       return mailDirectory;
    }
 
@@ -183,7 +184,7 @@ public class FXApp extends Application {
     */
    @Override
    public void start(Stage primaryStage) {
-      UNCONFIGURABLE_EXECUTOR_SERVICE.execute(SPEED_RUN_ACTUALIZE);
+      UNCONFIGURABLE_EXECUTOR_SERVICE_ONE_THR.execute(SPEED_RUN_ACTUALIZE);
       Group root = new Group();
       FXML_LOADER.setRoot(root);
       FXML_LOADER.setController(root);
@@ -211,8 +212,8 @@ public class FXApp extends Application {
       primaryStage.setOnCloseRequest(event -> {
          primaryStage.setAlwaysOnTop(false);
          primaryStage.setOpacity(0.5);
-         exit();
          staticMess.info(SOURCE_CLASS, DECODER_UTF8.toAnotherEnc("Отработано:"), TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - TIME_START) + " min");
+         exit();
          System.exit(0);
       });
    }
@@ -220,7 +221,7 @@ public class FXApp extends Application {
    public void ftpChk(ActionEvent actionEvent) {
       Task<String> ftpS = new StartMePChess(3);
       try{
-         MESSAGE_FX.infoNoTitles(ftpS.get());
+         textF.appendText(ftpS.get());
       }
       catch(InterruptedException | ExecutionException e){
          MESSAGE_FX.errorAlert(SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
@@ -271,10 +272,10 @@ public class FXApp extends Application {
       DBaseFactory dBaseFactory = new DBaseFactory.Builder(new RegRuMysql(), "select * from chessboard" + partyID, col, true).build();
       try{
          Map<String, Object> call = dBaseFactory.call();
-         FXApp.rcpt.add("143500@gmail.com");
-         FXApp.rcpt.add("olga-barchi@yandex.ru");
+         FXApp.RCPT.add("143500@gmail.com");
+         FXApp.RCPT.add("olga-barchi@yandex.ru");
          initProperties.setProps(properties);
-         ESender eSender = new ESender(FXApp.rcpt, "Playing party ID " + partyID, call.toString().replaceAll(", ", "\n"));
+         ESender eSender = new ESender(FXApp.RCPT, "Playing party ID " + partyID, call.toString().replaceAll(", ", "\n"));
 
          FXApp.EXECUTOR_SERVICE.execute(eSender);
       }

@@ -14,6 +14,7 @@ import ru.vachok.pbem.chess.ftpclient.LocalFilesWorker;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -141,6 +142,6 @@ public class UserAns {
       ExecutorService executorService = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor());
       Future<Message[]> submit = executorService.submit(cleaner);
       Message[] messages = submit.get();
-      Logger.getLogger(SOURCE_CLASS).log(WARNING, messages.length + " mails");
+      Logger.getLogger(SOURCE_CLASS).log(WARNING, () -> MessageFormat.format("{0} mails", messages.length));
    }
 }

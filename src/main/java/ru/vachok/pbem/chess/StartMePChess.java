@@ -6,6 +6,7 @@ import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.InitProperties;
+import ru.vachok.pbem.chess.anno.External;
 import ru.vachok.pbem.chess.ftpclient.FtpHomeCamCheck;
 import ru.vachok.pbem.chess.utilitar.*;
 import ru.vachok.pbem.chess.vrtx.VrtClientJDBC;
@@ -66,6 +67,7 @@ public class StartMePChess extends Task<String> {
     */
    public StartMePChess(Integer userAnswer) {
       this.userAnswer = userAnswer;
+      call();
    }
 
    /**
@@ -93,6 +95,7 @@ public class StartMePChess extends Task<String> {
     @see FtpHomeCamCheck
     @see StartScheduled
     */
+   @External(from = "StartMePChess.initProperties")
    static void noFX() {
       Properties properties = initProperties.getProps();
       messageToUser.info(SOURCE_CLASS, properties.toString(), UTF_8.toAnotherEnc(new Utilit().checkTime()));
@@ -113,8 +116,8 @@ public class StartMePChess extends Task<String> {
     {@link #userAnswer} == 0, {@link System#exit(int)} <b>status 0</b>.
     {@link UserAns} - класс-стартер.
 
-    @param userAnswer ответ пользователя на вопрос что запускать.
     @see FtpHomeCamCheck
+    @param userAnswer ответ пользователя на вопрос что запускать.
     */
    static String doNext(Integer userAnswer) {
       if(userAnswer==5) UserAns.ansFive();
@@ -139,6 +142,6 @@ public class StartMePChess extends Task<String> {
     */
    @Override
    protected String call() {
-      return SOURCE_CLASS;
+      return doNext(userAnswer);
    }
 }
