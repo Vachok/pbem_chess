@@ -5,6 +5,7 @@ import javafx.concurrent.Task;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
+import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.pbem.chess.anno.External;
 import ru.vachok.pbem.chess.ftpclient.FtpHomeCamCheck;
@@ -32,17 +33,11 @@ public class StartMePChess extends Task<String> {
     */
    private static final String SOURCE_CLASS = StartMePChess.class.getSimpleName();
 
-
-   /**
-    */
-   private static final InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + SOURCE_CLASS);
-
    /**
     Общение с пользователем.
     {@link MessageToUser}
     */
    private static final MessageToUser messageToUser = new MessageCons();
-
 
    /**
     {@link UTF8}
@@ -53,6 +48,10 @@ public class StartMePChess extends Task<String> {
     {@link VrtClientJDBC}
     */
    private static final VrtClientJDBC vrtClientJDBC = new VrtClientJDBC();
+
+   /**
+    */
+   private static InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + SOURCE_CLASS);
 
    /**
     Ответ юзера, для дальнейшей работы.
@@ -71,7 +70,8 @@ public class StartMePChess extends Task<String> {
    }
 
    /**
-    <b>PRIVATE</b>
+    <h3>PRIVATE</h3>
+    {@link UnsupportedOperationException}
     */
    private StartMePChess() {
       throw new UnsupportedOperationException("25.07.2018 (9:28) " + SOURCE_CLASS + ".private constructor");
@@ -80,9 +80,11 @@ public class StartMePChess extends Task<String> {
    /**
     1.Старт
     1.1 {@link #call()}
+    @see FXApp
     */
    @Override
    public void run() {
+      Thread.currentThread().setName("StartMePChess.run");
       doNext(userAnswer);
    }
 
@@ -90,14 +92,25 @@ public class StartMePChess extends Task<String> {
     {@link FXApp#main(java.lang.String[])}
     Консольная версия приложения.
     <p>
-    <b><i>Задаёт юзеру вопрос.</i></b> Запускает {@link #doNext(Integer)}
+    <b><i>Задаёт юзеру вопрос.</i></b> Запускает :
+    <p>
+    .1 {@link Utilit#checkTime()}
+    .2 {@link DecoderEnc#toAnotherEnc(String)}
+    .3 same
+    .4 {@link #doNext(Integer)}
 
     @see FtpHomeCamCheck
     @see StartScheduled
     */
-   @External(from = "StartMePChess.initProperties")
+   @External (from = "StartMePChess.initProperties")
    static void noFX() {
-      Properties properties = initProperties.getProps();
+      @SuppressWarnings ("UnusedAssignment") Properties properties = new Properties();
+      properties = initProperties.getProps();
+      if(properties.isEmpty()){ initProperties = new FileProps(SOURCE_CLASS); }
+      else{
+         InitProperties fileInit = new FileProps(SOURCE_CLASS);
+         fileInit.setProps(properties);
+      }
       messageToUser.info(SOURCE_CLASS, properties.toString(), UTF_8.toAnotherEnc(new Utilit().checkTime()));
       Scanner scanner = new Scanner(System.in);
       Integer userAnswer;
@@ -110,15 +123,24 @@ public class StartMePChess extends Task<String> {
    }
 
    /**
-    {@link #noFX()}
+    @return {@link #SOURCE_CLASS}
+    */
+   @Override
+   protected String call() {
+      return doNext(userAnswer);
+   }
+
+   /**
+    <h2>Основное действие</h2>
+    {@link #noFX()}, {@link FXApp#main(String[])}, {@link #run()}, {@link #call()}
     Запускает что-либо в зависимости от выбора
     <p>
     {@link #userAnswer} == 0, {@link System#exit(int)} <b>status 0</b>.
     {@link UserAns} - класс-стартер.
 
-    @see FtpHomeCamCheck
     @param userAnswer ответ пользователя на вопрос что запускать.
     */
+   @SuppressWarnings ("FeatureEnvy")
    static String doNext(Integer userAnswer) {
       if(userAnswer==5) UserAns.ansFive();
       if(userAnswer==4) UserAns.ansFour();
@@ -135,13 +157,5 @@ public class StartMePChess extends Task<String> {
          messageToUser.confirm(SOURCE_CLASS, "The Move = " + s, "OK? " + s1);
       }
       return s;
-   }
-
-   /**
-    @return {@link #SOURCE_CLASS}
-    */
-   @Override
-   protected String call() {
-      return doNext(userAnswer);
    }
 }

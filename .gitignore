@@ -99,3 +99,7 @@ StartMePChess.properties
 MailWorksLocal.properties
 MailWorksLocalTest.properties
 /MailMessages.properties
+/FtpHomeCamCheckTest.properties
+/PartyNewIDPartyTest.properties
+/PartyNewIDParty.properties
+/MailWorksLocal1.properties
