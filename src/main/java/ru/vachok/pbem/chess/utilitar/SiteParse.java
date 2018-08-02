@@ -12,17 +12,27 @@ import java.net.URL;
 import java.util.Objects;
 
 
-/**Парсер сайта <a href="https://istra--mo.sudrf.ru" target=_blank>истринского суда.</a>
+/**
+ Парсер сайта <a href="https://istra--mo.sudrf.ru" target=_blank>истринского суда.</a>
  <p>
  Скачивает страницу за страницей назначенных и прошедших заседаний, и отправляет в базу, бля удобного поиска.
- * @since 09.07.2018 (10:44)
- */
-public class SiteParse {
 
+ @since 09.07.2018 (10:44) */
+class SiteParse {
+
+   /**
+    <h3>Class Simple Name</h3>
+    */
    private static final String SOURCE_CLASS = SiteParse.class.getSimpleName();
 
-   private final MessageToUser messageToUser = new MessageCons();
+   /**
+    <h3>{@link MessageCons}</h3>
+    */
+   private MessageToUser messageToUser = new MessageCons();
 
+   /**
+    <h3>URL, который надо спарсить</h3>
+    */
    private URL siteURL;
 
    /**
@@ -38,7 +48,7 @@ public class SiteParse {
 
       }
       catch(MalformedURLException e){ messageToUser.errorAlert(SiteParse.SOURCE_CLASS, "err id 20", e.getMessage()); }
-      try(InputStream inputStream = siteURL.openStream();){
+      try(InputStream inputStream = siteURL.openStream()){
          stringDownloadedBytes = inputStream.readAllBytes();
          messageToUser.out(day + month, stringDownloadedBytes);
       }
