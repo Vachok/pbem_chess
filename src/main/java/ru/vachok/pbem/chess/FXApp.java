@@ -184,7 +184,7 @@ public class FXApp extends Application {
     */
    @Override
    public void start(Stage primaryStage) {
-      UNCONFIGURABLE_EXECUTOR_SERVICE_ONE_THR.execute(SPEED_RUN_ACTUALIZE);
+
       Group root = new Group();
       FXML_LOADER.setRoot(root);
       FXML_LOADER.setController(root);
@@ -227,6 +227,7 @@ public class FXApp extends Application {
          MESSAGE_FX.errorAlert(SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
          Thread.currentThread().interrupt();
       }
+      UNCONFIGURABLE_EXECUTOR_SERVICE_ONE_THR.execute(SPEED_RUN_ACTUALIZE);
    }
 
    /**

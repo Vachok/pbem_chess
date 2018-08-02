@@ -8,6 +8,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
+import ru.vachok.pbem.chess.StartMePChess;
 import ru.vachok.pbem.chess.emails.ESender;
 import ru.vachok.pbem.chess.emails.EmailsProviders;
 import ru.vachok.pbem.chess.emails.SimpleEmailREG;
@@ -51,20 +52,20 @@ public class FtpHomeCamCheck implements FtpConnect, Callable<String>, Runnable {
    private static final DecoderEnc UTF_8 = new UTF8();
 
    /**
-    {@link DBRegProperties} - {@link ConstantsFor#APP_NAME} + {@link #SOURCE_CLASS}
-    */
-   private InitProperties dbRegProperties = new DBRegProperties(ConstantsFor.APP_NAME + SOURCE_CLASS);
-
-   /**
     {@link FtpConnect#getClient()}
     */
    private final FTPClient ftpClient = getClient();
 
    /**
+    {@link DBRegProperties} - {@link ConstantsFor#APP_NAME} + {@link #SOURCE_CLASS}
+    */
+   private InitProperties dbRegProperties = new DBRegProperties(ConstantsFor.APP_NAME + SOURCE_CLASS);
+
+   /**
     имя папки, исходя из сегодняшней даты.
     {@link #dateAsFolderName()}
     */
-   private final String eDateSt = dateAsFolderName();
+   private String eDateSt = dateAsFolderName();
 
    /**
     <b>Init - </b> {@link #FtpHomeCamCheck()}
@@ -300,9 +301,11 @@ public class FtpHomeCamCheck implements FtpConnect, Callable<String>, Runnable {
          messageToUser.info(SOURCE_CLASS + ".run", s1, s2);
          eSend(filesLocal + s1 + s2);
       }
+
       catch(InterruptedException | ExecutionException e){
          messageToUser.errorAlert(SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
          Thread.currentThread().interrupt();
       }
+      new StartMePChess(3);
    }
 }

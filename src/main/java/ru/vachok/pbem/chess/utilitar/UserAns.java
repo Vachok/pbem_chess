@@ -3,13 +3,11 @@ package ru.vachok.pbem.chess.utilitar;
 
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.props.PrExchange;
 import ru.vachok.pbem.chess.board.MoveStarter;
 import ru.vachok.pbem.chess.board.PartyNewIDParty;
 import ru.vachok.pbem.chess.emails.ESender;
 import ru.vachok.pbem.chess.emails.MailMessages;
 import ru.vachok.pbem.chess.ftpclient.FtpHomeCamCheck;
-import ru.vachok.pbem.chess.ftpclient.LocalFilesWorker;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -22,7 +20,6 @@ import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.WARNING;
 
 
@@ -79,30 +76,41 @@ public class UserAns {
    }
 
    /**
+    <h2>Проверка видеофайлов</h2>
+    Как на ПК, так и на камере.
     {@link FtpHomeCamCheck#call()}
-    */
-   public static void ansThree() {
-      try{
-         Future<String> s = FIXED_THREAD_POOL_5.submit(new LocalFilesWorker());
-         Logger.getLogger(SOURCE_CLASS).log(INFO, s.get());
-         Runnable ftp = new FtpHomeCamCheck();
-         FIXED_THREAD_POOL_5.execute(ftp);
-      }
-      catch(Exception e){
 
-         MESSAGE_TO_USER.errorAlert(SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
+    @return {@link String} с инфо о положении дел с видосами.
+    */
+   public static String ansThree() {
+      try{
+         Callable<String> callToFTP = new FtpHomeCamCheck();
+         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+         ScheduledFuture<String> schedule = scheduledExecutorService.schedule(callToFTP, 60, TimeUnit.SECONDS);
+         String s1 = schedule.get();
+         MESSAGE_TO_USER.info(SOURCE_CLASS, "ans = 3", s1);
+         return s1;
       }
+      catch(InterruptedException | ExecutionException e){
+         MESSAGE_TO_USER.errorAlert(SOURCE_CLASS, e.getMessage(), Arrays.toString(e.getStackTrace()));
+         Thread.currentThread().interrupt();
+      }
+      return ConstantsFor.UTF_8_ENC.toAnotherEnc("Нет ничего");
    }
 
    /**
-    {@link PrExchange}
+    <h2>Новая партия</h2>
+    {@link PartyNewIDParty}
+
+    @see #FIXED_THREAD_POOL_5
     */
    public static void ansTwo() {
       Runnable rNewParty = PartyNewIDParty.getInst();
       FIXED_THREAD_POOL_5.execute(rNewParty);
    }
 
-   /** Запускает лямбду.
+   /**
+    Запускает лямбду.
     {@link #GET_LAST_PARTY}
     */
    public static void ansOne() {
@@ -110,6 +118,11 @@ public class UserAns {
       FIXED_THREAD_POOL_5.submit(moveStarter);
    }
 
+   /**
+    <h2>Очистка почтового ящика (4)</h2>
+
+    @see MailMessages#MailMessages()
+    */
    public static void ansFour() {
       FIXED_THREAD_POOL_5.execute(GET_LAST_PARTY);
       Callable<Message[]> mailMsgs = new MailMessages();
@@ -129,12 +142,6 @@ public class UserAns {
 
    }
 
-   public static void ansFive() {
-
-      Runnable r = new SpeedRunActualize();
-      FIXED_THREAD_POOL_5.execute(r);
-   }
-
    public static void ansFour(String s) throws ExecutionException, InterruptedException {
 
       MailMessages.Cleaner cleaner = new MailMessages.Cleaner(s);
@@ -142,5 +149,11 @@ public class UserAns {
       Future<Message[]> submit = executorService.submit(cleaner);
       Message[] messages = submit.get();
       Logger.getLogger(SOURCE_CLASS).log(WARNING, messages.length + " mails");
+   }
+
+   public static void ansFive() {
+
+      Runnable r = new SpeedRunActualize();
+      FIXED_THREAD_POOL_5.execute(r);
    }
 }

@@ -8,7 +8,6 @@ import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.pbem.chess.anno.External;
-import ru.vachok.pbem.chess.ftpclient.FtpHomeCamCheck;
 import ru.vachok.pbem.chess.utilitar.*;
 import ru.vachok.pbem.chess.vrtx.VrtClientJDBC;
 
@@ -56,13 +55,15 @@ public class StartMePChess extends Task<String> {
    /**
     Ответ юзера, для дальнейшей работы.
     */
-   private final Integer userAnswer;
+   @SuppressWarnings ("FieldMayBeFinal")
+   private Integer userAnswer;
 
 
    /**
     Конструктор по-умолчанию.
 
     @param userAnswer что делать дальше. {@link #doNext(Integer)}
+    @see FXApp
     */
    public StartMePChess(Integer userAnswer) {
       this.userAnswer = userAnswer;
@@ -70,60 +71,9 @@ public class StartMePChess extends Task<String> {
    }
 
    /**
-    <h3>PRIVATE</h3>
-    {@link UnsupportedOperationException}
-    */
-   private StartMePChess() {
-      throw new UnsupportedOperationException("25.07.2018 (9:28) " + SOURCE_CLASS + ".private constructor");
-   }
+    <h2>CALL to {@link String}</h2>
 
-   /**
-    1.Старт
-    1.1 {@link #call()}
-    @see FXApp
-    */
-   @Override
-   public void run() {
-      Thread.currentThread().setName("StartMePChess.run");
-      doNext(userAnswer);
-   }
-
-   /**
-    {@link FXApp#main(java.lang.String[])}
-    Консольная версия приложения.
-    <p>
-    <b><i>Задаёт юзеру вопрос.</i></b> Запускает :
-    <p>
-    .1 {@link Utilit#checkTime()}
-    .2 {@link DecoderEnc#toAnotherEnc(String)}
-    .3 same
-    .4 {@link #doNext(Integer)}
-
-    @see FtpHomeCamCheck
-    @see StartScheduled
-    */
-   @External (from = "StartMePChess.initProperties")
-   static void noFX() {
-      @SuppressWarnings ("UnusedAssignment") Properties properties = new Properties();
-      properties = initProperties.getProps();
-      if(properties.isEmpty()){ initProperties = new FileProps(SOURCE_CLASS); }
-      else{
-         InitProperties fileInit = new FileProps(SOURCE_CLASS);
-         fileInit.setProps(properties);
-      }
-      messageToUser.info(SOURCE_CLASS, properties.toString(), UTF_8.toAnotherEnc(new Utilit().checkTime()));
-      Scanner scanner = new Scanner(System.in);
-      Integer userAnswer;
-      Map<Integer, String> names = StartScheduled.Services.getNames();
-      messageToUser.infoNoTitles(UTF_8.toAnotherEnc("Введите имя сервиса:\n" + names.toString().replaceAll(", ", "\n")));
-      while(scanner.hasNext()){
-         userAnswer = scanner.nextInt();
-         doNext(userAnswer);
-      }
-   }
-
-   /**
-    @return {@link #SOURCE_CLASS}
+    @return {@link #doNext(Integer)}
     */
    @Override
    protected String call() {
@@ -139,6 +89,7 @@ public class StartMePChess extends Task<String> {
     {@link UserAns} - класс-стартер.
 
     @param userAnswer ответ пользователя на вопрос что запускать.
+    @see VrtClientJDBC
     */
    @SuppressWarnings ("FeatureEnvy")
    static String doNext(Integer userAnswer) {
@@ -157,5 +108,58 @@ public class StartMePChess extends Task<String> {
          messageToUser.confirm(SOURCE_CLASS, "The Move = " + s, "OK? " + s1);
       }
       return s;
+   }
+
+   /**
+    <h3>PRIVATE</h3>
+    {@link UnsupportedOperationException}
+    */
+   private StartMePChess() {
+      throw new UnsupportedOperationException("25.07.2018 (9:28) " +
+            SOURCE_CLASS + ".private constructor");
+   }
+
+   /**
+    <h2>RUN</h2>
+    <p>
+    {@link #call()}
+
+    @see FXApp
+    */
+   @Override
+   public void run() {
+      Thread.currentThread().setName("StartMePChess.run");
+      call();
+   }
+
+   /**
+    <h2> Консольная версия приложения.</h2>
+    {@link FXApp#main(java.lang.String[])}
+    <p>
+    <b><i>Задаёт юзеру вопрос.</i></b> Запускает :
+    <p>
+    {@link #doNext(Integer)}
+    */
+   @External (from = "StartMePChess.initProperties")
+   static void noFX() {
+      @SuppressWarnings ("UnusedAssignment") Properties properties = new Properties();
+      properties = initProperties.getProps();
+      if(properties.isEmpty()){
+         initProperties = new FileProps(SOURCE_CLASS);
+      }
+      else{
+         InitProperties fileInit = new FileProps(SOURCE_CLASS);
+         fileInit.setProps(properties);
+      }
+      messageToUser.info(SOURCE_CLASS, properties.toString(), UTF_8.toAnotherEnc(new Utilit().checkTime()));
+      Scanner scanner = new Scanner(System.in);
+      Integer userAnswer;
+      Map<Integer, String> names = StartScheduled.Services.getNames();
+      messageToUser.infoNoTitles(UTF_8.toAnotherEnc("Введите имя сервиса:\n" +
+            names.toString().replaceAll(", ", "\n")));
+      while(scanner.hasNext()){
+         userAnswer = scanner.nextInt();
+         doNext(userAnswer);
+      }
    }
 }
