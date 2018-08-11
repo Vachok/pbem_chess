@@ -9,7 +9,6 @@ import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.pbem.chess.anno.External;
 import ru.vachok.pbem.chess.ftpclient.FtpHomeCamCheck;
 import ru.vachok.pbem.chess.utilitar.*;
-import ru.vachok.pbem.chess.vrtx.VrtClientJDBC;
 
 import java.util.Map;
 import java.util.Properties;
@@ -48,11 +47,6 @@ public class StartMePChess extends Task<String> {
     {@link UTF8}
     */
    private static final DecoderEnc UTF_8 = new UTF8();
-
-   /**
-    {@link VrtClientJDBC}
-    */
-   private static final VrtClientJDBC vrtClientJDBC = new VrtClientJDBC();
 
    /**
     Ответ юзера, для дальнейшей работы.
@@ -127,12 +121,10 @@ public class StartMePChess extends Task<String> {
       if(userAnswer==1) UserAns.ansOne();
       if(userAnswer==0) System.exit(0);
       String s = "mailToString";
-      String s1 = vrtClientJDBC.toString();
       if(s.toLowerCase().contains("moving:")){
          Pattern p = Pattern.compile("([\\w][\\d])-([\\w][\\d])");
          Matcher m = p.matcher(s);
          while(m.find()) s = m.group();
-         messageToUser.confirm(SOURCE_CLASS, "The Move = " + s, "OK? " + s1);
       }
       return s;
    }

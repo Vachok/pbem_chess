@@ -30,6 +30,8 @@ public class MoveMover implements MoveFigures {
 
    private String userTriedToMove;
 
+   public Map<Integer, String> pos;
+
    private MoveMover() {
 
    }
@@ -49,7 +51,15 @@ public class MoveMover implements MoveFigures {
       em.infoNoTitles(this.getClass().toGenericString());
    }
 
-   private static Map<Integer, String> getPositions(String sql) {
+   public static MoveMover getInstance(long partyID, String userTriedToMove) {
+      ourInstance.partyID = partyID;
+      ourInstance.userTriedToMove = userTriedToMove;
+      Map<Integer, String> positions = getPositions("select * from g_" + partyID + " where standing is not null");
+      ourInstance.pos = positions;
+      return ourInstance;
+   }
+
+   static Map<Integer, String> getPositions(String sql) {
       Map<Integer, String> currentPositions = new ConcurrentHashMap<>();
       DataConnectTo dataConnectTo = new RegRuMysql();
       try(Connection connection = dataConnectTo.getDefaultConnection("u0466446_chess");
@@ -64,12 +74,5 @@ public class MoveMover implements MoveFigures {
    @Override
    public void moveFigure() {
       throw ConstantsFor.NOT_READY;
-   }
-
-   public static MoveMover getInstance(long partyID, String userTriedToMove) {
-      ourInstance.partyID = partyID;
-      ourInstance.userTriedToMove = userTriedToMove;
-
-      return ourInstance;
    }
 }
